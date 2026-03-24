@@ -27,9 +27,7 @@ public static class ServiceExtensions
     {
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IOrgTypeService, OrgTypeService>();
         services.AddScoped<ISpecService, SpecService>();
-        services.AddScoped<IStatusService, StatusService>();
         services.AddScoped<IPolicyService, PolicyService>();
         services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IOrgService, OrgService>();

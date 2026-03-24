@@ -11,6 +11,8 @@ namespace CrmWebApi.Controllers;
 [Authorize]
 public class ActivsController(IActivService activService) : ControllerBase
 {
+
+    // Получение всех активов. Если пользователь не админ, то возвращаем только его визиты
     [HttpGet]
     public async Task<IEnumerable<ActivResponse>> GetAll()
     {
@@ -19,10 +21,12 @@ public class ActivsController(IActivService activService) : ControllerBase
         return await activService.GetAllAsync(isAdmin ? null : usrId);
     }
 
+
     [HttpGet("{id:int}")]
     public async Task<ActivResponse> GetById(int id) =>
         await activService.GetByIdAsync(id);
 
+    // Создание визита. Пользователь может создавать только свои визиты, поэтому берем id из токена
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateActivRequest req)
     {
@@ -44,16 +48,16 @@ public class ActivsController(IActivService activService) : ControllerBase
     }
 
     [HttpPost("{activId:int}/drugs/{drugId:int}")]
-    public async Task<IActionResult> AddDrug(int activId, int drugId)
+    public async Task<IActionResult> LinkDrug(int activId, int drugId)
     {
-        await activService.AddDrugAsync(activId, drugId);
+        await activService.LinkDrugAsync(activId, drugId);
         return NoContent();
     }
 
     [HttpDelete("{activId:int}/drugs/{drugId:int}")]
-    public async Task<IActionResult> RemoveDrug(int activId, int drugId)
+    public async Task<IActionResult> UnlinkDrug(int activId, int drugId)
     {
-        await activService.RemoveDrugAsync(activId, drugId);
+        await activService.UnlinkDrugAsync(activId, drugId);
         return NoContent();
     }
 }

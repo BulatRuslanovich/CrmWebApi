@@ -6,6 +6,6 @@ public interface IUserRepository : IGenericRepository<Usr>
 {
     IQueryable<Usr> QueryActive();
     Task AddPoliciesAsync(IEnumerable<UsrPolicy> policies);
-    Task AddPolicyAsync(int userId, int policyId);
-    Task RemovePolicyAsync(int userId, int policyId);
+    Task LinkPolicyAsync(int userId, int policyId);
+    Task UnlinkPolicyAsync(int userId, int policyId);
 }

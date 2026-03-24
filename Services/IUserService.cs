@@ -10,6 +10,6 @@ public interface IUserService
     Task<UserResponse> UpdateAsync(int id, UpdateUserRequest request);
     Task DeleteAsync(int id);
     Task ChangePasswordAsync(int id, ChangePasswordRequest request);
-    Task<UserResponse> AddPolicyAsync(int userId, int policyId);
-    Task<UserResponse> RemovePolicyAsync(int userId, int policyId);
+    Task<UserResponse> LinkPolicyAsync(int userId, int policyId);
+    Task<UserResponse> UnlinkPolicyAsync(int userId, int policyId);
 }

@@ -7,11 +7,19 @@ namespace CrmWebApi.Services.Impl;
 
 public class ActivService(IActivRepository repo) : IActivService
 {
-    public async Task<IEnumerable<ActivResponse>> GetAllAsync(int? usrId = null) =>
-        await repo.QueryActive()
-            .Where(a => usrId == null || a.UsrId == usrId)
+    public async Task<IEnumerable<ActivResponse>> GetAllAsync(int? usrId = null) {
+        if (usrId is null)
+        {
+            return await repo.QueryActive()
+                .Select(a => MapToResponse(a))
+                .ToListAsync();
+        } 
+
+        return await repo.QueryActive()
+            .Where(a => a.UsrId == usrId)
             .Select(a => MapToResponse(a))
             .ToListAsync();
+    }
 
     public async Task<ActivResponse> GetByIdAsync(int id)
     {
@@ -64,11 +72,11 @@ public class ActivService(IActivRepository repo) : IActivService
         await repo.UpdateAsync(activ);
     }
 
-    public async Task AddDrugAsync(int activId, int drugId) =>
-        await repo.AddDrugAsync(activId, drugId);
+    public async Task LinkDrugAsync(int activId, int drugId) =>
+        await repo.LinkDrugAsync(activId, drugId);
 
-    public async Task RemoveDrugAsync(int activId, int drugId) =>
-        await repo.RemoveDrugAsync(activId, drugId);
+    public async Task UnlinkDrugAsync(int activId, int drugId) =>
+        await repo.UnlinkDrugAsync(activId, drugId);
 
     private static ActivResponse MapToResponse(Activ a) => new(
         a.ActivId, a.UsrId, a.Usr.UsrLogin,

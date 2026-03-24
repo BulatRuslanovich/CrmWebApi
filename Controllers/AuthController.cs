@@ -25,6 +25,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         return Ok(result);
     }
 
+    // Получение новой пары токенов по refresh-токену
     [HttpPost("refresh")]
     [AllowAnonymous]
     public async Task<IActionResult> Refresh([FromBody] string refreshToken)

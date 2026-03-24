@@ -20,13 +20,13 @@ public class ActivRepository(AppDbContext db) : GenericRepository<Activ>(db), IA
         await _db.SaveChangesAsync();
     }
 
-    public async Task AddDrugAsync(int activId, int drugId)
+    public async Task LinkDrugAsync(int activId, int drugId)
     {
         _db.ActivDrugs.Add(new ActivDrug { ActivId = activId, DrugId = drugId });
         await _db.SaveChangesAsync();
     }
 
-    public async Task RemoveDrugAsync(int activId, int drugId)
+    public async Task UnlinkDrugAsync(int activId, int drugId)
     {
         var link = await _db.ActivDrugs.FirstOrDefaultAsync(ad => ad.ActivId == activId && ad.DrugId == drugId)
             ?? throw new KeyNotFoundException("Связь не найдена");

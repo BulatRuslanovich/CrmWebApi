@@ -17,7 +17,7 @@ public class UserRepository(AppDbContext db) : GenericRepository<Usr>(db), IUser
         await _db.SaveChangesAsync();
     }
 
-    public async Task AddPolicyAsync(int userId, int policyId)
+    public async Task LinkPolicyAsync(int userId, int policyId)
     {
         var exists = await _db.UsrPolicies
             .AnyAsync(up => up.UsrId == userId && up.PolicyId == policyId);
@@ -28,7 +28,7 @@ public class UserRepository(AppDbContext db) : GenericRepository<Usr>(db), IUser
         }
     }
 
-    public async Task RemovePolicyAsync(int userId, int policyId)
+    public async Task UnlinkPolicyAsync(int userId, int policyId)
     {
         var entry = await _db.UsrPolicies
             .FirstOrDefaultAsync(up => up.UsrId == userId && up.PolicyId == policyId);

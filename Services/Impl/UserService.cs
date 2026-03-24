@@ -74,15 +74,15 @@ public class UserService(IUserRepository repo) : IUserService
         await repo.UpdateAsync(user);
     }
 
-    public async Task<UserResponse> AddPolicyAsync(int userId, int policyId)
+    public async Task<UserResponse> LinkPolicyAsync(int userId, int policyId)
     {
-        await repo.AddPolicyAsync(userId, policyId);
+        await repo.LinkPolicyAsync(userId, policyId);
         return await GetByIdAsync(userId);
     }
 
-    public async Task<UserResponse> RemovePolicyAsync(int userId, int policyId)
+    public async Task<UserResponse> UnlinkPolicyAsync(int userId, int policyId)
     {
-        await repo.RemovePolicyAsync(userId, policyId);
+        await repo.UnlinkPolicyAsync(userId, policyId);
         return await GetByIdAsync(userId);
     }
 

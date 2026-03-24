@@ -9,6 +9,6 @@ public interface IActivService
     Task<ActivResponse> CreateAsync(int usrId, CreateActivRequest req);
     Task<ActivResponse> UpdateAsync(int id, UpdateActivRequest req);
     Task DeleteAsync(int id);
-    Task AddDrugAsync(int activId, int drugId);
-    Task RemoveDrugAsync(int activId, int drugId);
+    Task LinkDrugAsync(int activId, int drugId);
+    Task UnlinkDrugAsync(int activId, int drugId);
 }

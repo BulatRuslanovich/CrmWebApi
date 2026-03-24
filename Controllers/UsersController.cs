@@ -12,7 +12,7 @@ namespace CrmWebApi.Controllers;
 public class UsersController(IUserService userService) : ControllerBase
 {
     [HttpGet]
-    [Authorize(Roles = "Admin,Director")]
+    [Authorize(Roles = "Admin")]
     public async Task<IEnumerable<UserResponse>> GetAll() =>
         await userService.GetAllAsync();
 
@@ -57,11 +57,11 @@ public class UsersController(IUserService userService) : ControllerBase
 
     [HttpPost("{id:int}/policies/{policyId:int}")]
     [Authorize(Roles = "Admin")]
-    public async Task<UserResponse> AddPolicy(int id, int policyId) =>
-        await userService.AddPolicyAsync(id, policyId);
+    public async Task<UserResponse> LinkPolicy(int id, int policyId) =>
+        await userService.LinkPolicyAsync(id, policyId);
 
     [HttpDelete("{id:int}/policies/{policyId:int}")]
     [Authorize(Roles = "Admin")]
-    public async Task<UserResponse> RemovePolicy(int id, int policyId) =>
-        await userService.RemovePolicyAsync(id, policyId);
+    public async Task<UserResponse> UnlinkPolicy(int id, int policyId) =>
+        await userService.UnlinkPolicyAsync(id, policyId);
 }
