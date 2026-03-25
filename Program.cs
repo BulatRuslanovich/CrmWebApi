@@ -1,7 +1,5 @@
-using CrmWebApi.Data;
 using CrmWebApi.Extensions;
 using CrmWebApi.Middleware;
-using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -13,20 +11,13 @@ builder.Host.UseSerilog((context, config) =>
         .WriteTo.Console(
             theme: Serilog.Sinks.SystemConsole.Themes.AnsiConsoleTheme.Code,
             outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}")
-        .MinimumLevel.Information()
-        .MinimumLevel.Override("CrmWebApi.Data", context.HostingEnvironment.IsProduction()
-            ? Serilog.Events.LogEventLevel.Warning
-            : Serilog.Events.LogEventLevel.Information)
-        .MinimumLevel.Override("CrmWebApi.Middleware", Serilog.Events.LogEventLevel.Warning)
-        .MinimumLevel.Override("Microsoft.AspNetCore", Serilog.Events.LogEventLevel.Warning)
-        .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", context.HostingEnvironment.IsProduction()
-            ? Serilog.Events.LogEventLevel.Warning
-            : Serilog.Events.LogEventLevel.Information);
+        .MinimumLevel.Information();
 
     if (!context.HostingEnvironment.IsProduction())
         config.WriteTo.Debug();
 });
 
+builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddServices();
 builder.Services.AddOpenApi();
@@ -48,12 +39,6 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
 
 if (app.Environment.IsDevelopment())
 {

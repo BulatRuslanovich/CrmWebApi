@@ -1,14 +1,23 @@
 using CrmWebApi.Data.Entities;
+using CrmWebApi.DTOs;
 using CrmWebApi.DTOs.Phys;
+using CrmWebApi.DTOs.Spec;
 using CrmWebApi.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CrmWebApi.Services.Impl;
 
-public class PhysService(IPhysRepository repo) : IPhysService
+public class PhysService(IPhysRepository repo, IGenericRepository<Spec> specRepo, IMemoryCache cache) : IPhysService
 {
-    public async Task<IEnumerable<PhysResponse>> GetAllAsync() =>
-        await repo.QueryActive().Select(p => MapToResponse(p)).ToListAsync();
+    public async Task<PagedResponse<PhysResponse>> GetAllAsync(int page, int pageSize)
+    {
+        var query = repo.QueryActive();
+        var total = await query.CountAsync();
+        var items = (await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync())
+            .Select(MapToResponse).ToList();
+        return new PagedResponse<PhysResponse>(items, page, pageSize, total);
+    }
 
     public async Task<PhysResponse> GetByIdAsync(int id)
     {
@@ -70,4 +79,43 @@ public class PhysService(IPhysRepository repo) : IPhysService
         p.PhysPhone, p.PhysEmail, p.PhysPosition,
         [.. p.PhysOrgs.Where(po => !po.Org.IsDeleted).Select(po => po.Org.OrgName)]
     );
+
+     private const string AllKey = "specs";
+
+    public async Task<IEnumerable<SpecResponse>> GetAllSpecsAsync()
+    {
+        if (cache.TryGetValue(AllKey, out IEnumerable<SpecResponse>? cached))
+            return cached!;
+        var result = (await specRepo.FindAsync(s => !s.IsDeleted)).Select(MapToResponse).ToList();
+        cache.Set(AllKey, result, TimeSpan.FromMinutes(10));
+        return result;
+    }
+
+    public async Task<SpecResponse> GetSpecByIdAsync(int id)
+    {
+        var spec = await specRepo.GetByIdAsync(id);
+        if (spec is null || spec.IsDeleted)
+            throw new KeyNotFoundException($"Специальность {id} не найдена");
+        return MapToResponse(spec);
+    }
+
+    public async Task<SpecResponse> CreateSpecAsync(CreateSpecRequest req)
+    {
+        var spec = new Spec { SpecName = req.SpecName };
+        await specRepo.AddAsync(spec);
+        cache.Remove(AllKey);
+        return MapToResponse(spec);
+    }
+
+    public async Task DeleteSpecAsync(int id)
+    {
+        var spec = await repo.GetByIdAsync(id);
+        if (spec is null || spec.IsDeleted)
+            throw new KeyNotFoundException($"Специальность {id} не найдена");
+        spec.IsDeleted = true;
+        await repo.UpdateAsync(spec);
+        cache.Remove(AllKey);
+    }
+
+    private static SpecResponse MapToResponse(Spec s) => new(s.SpecId, s.SpecName);
 }

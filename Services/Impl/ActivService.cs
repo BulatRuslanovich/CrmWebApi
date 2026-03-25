@@ -1,4 +1,5 @@
 using CrmWebApi.Data.Entities;
+using CrmWebApi.DTOs;
 using CrmWebApi.DTOs.Activ;
 using CrmWebApi.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -7,18 +8,16 @@ namespace CrmWebApi.Services.Impl;
 
 public class ActivService(IActivRepository repo) : IActivService
 {
-    public async Task<IEnumerable<ActivResponse>> GetAllAsync(int? usrId = null) {
-        if (usrId is null)
-        {
-            return await repo.QueryActive()
-                .Select(a => MapToResponse(a))
-                .ToListAsync();
-        } 
+    public async Task<PagedResponse<ActivResponse>> GetAllAsync(int page, int pageSize, int? usrId = null)
+    {
+        var query = repo.QueryActive();
+        if (usrId is not null)
+            query = query.Where(a => a.UsrId == usrId);
 
-        return await repo.QueryActive()
-            .Where(a => a.UsrId == usrId)
-            .Select(a => MapToResponse(a))
-            .ToListAsync();
+        var total = await query.CountAsync();
+        var items = (await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync())
+            .Select(MapToResponse).ToList();
+        return new PagedResponse<ActivResponse>(items, page, pageSize, total);
     }
 
     public async Task<ActivResponse> GetByIdAsync(int id)

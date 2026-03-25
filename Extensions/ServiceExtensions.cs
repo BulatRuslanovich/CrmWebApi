@@ -27,16 +27,12 @@ public static class ServiceExtensions
     {
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<ISpecService, SpecService>();
-        services.AddScoped<IPolicyService, PolicyService>();
         services.AddScoped<IDrugService, DrugService>();
         services.AddScoped<IOrgService, OrgService>();
         services.AddScoped<IPhysService, PhysService>();
         services.AddScoped<IActivService, ActivService>();
         return services;
     }
-
-
 
     public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration config)
     {

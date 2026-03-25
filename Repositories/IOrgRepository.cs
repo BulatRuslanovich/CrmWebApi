@@ -5,4 +5,5 @@ namespace CrmWebApi.Repositories;
 public interface IOrgRepository : IGenericRepository<Org>
 {
     IQueryable<Org> QueryActive();
+    IQueryable<OrgType> QueryOrgTypes();
 }

@@ -1,14 +1,25 @@
 using CrmWebApi.Data.Entities;
+using CrmWebApi.DTOs;
 using CrmWebApi.DTOs.Org;
+using CrmWebApi.DTOs.OrgType;
 using CrmWebApi.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CrmWebApi.Services.Impl;
 
-public class OrgService(IOrgRepository repo) : IOrgService
+public class OrgService(IOrgRepository repo, IMemoryCache cache) : IOrgService
 {
-    public async Task<IEnumerable<OrgResponse>> GetAllAsync() =>
-        await repo.QueryActive().Select(o => MapToResponse(o)).ToListAsync();
+    private const string OrgTypesKey = "org_types";
+
+    public async Task<PagedResponse<OrgResponse>> GetAllAsync(int page, int pageSize)
+    {
+        var query = repo.QueryActive();
+        var total = await query.CountAsync();
+        var items = (await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync())
+            .Select(MapToResponse).ToList();
+        return new PagedResponse<OrgResponse>(items, page, pageSize, total);
+    }
 
     public async Task<OrgResponse> GetByIdAsync(int id)
     {
@@ -60,4 +71,15 @@ public class OrgService(IOrgRepository repo) : IOrgService
         o.OrgId, o.OrgTypeId, o.OrgType.OrgTypeName,
         o.OrgName, o.OrgInn, o.OrgLatitude, o.OrgLongitude, o.OrgAddress
     );
+
+    public async Task<IEnumerable<OrgTypeResponse>> GetAllTypesAsync()
+    {
+        if (cache.TryGetValue(OrgTypesKey, out IEnumerable<OrgTypeResponse>? cached))
+            return cached!;
+        var result = await repo.QueryOrgTypes()
+            .Select(ot => new OrgTypeResponse(ot.OrgTypeId, ot.OrgTypeName))
+            .ToListAsync();
+        cache.Set(OrgTypesKey, result, TimeSpan.FromMinutes(10));
+        return result;
+    }
 }

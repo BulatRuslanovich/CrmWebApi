@@ -1,14 +1,23 @@
 using CrmWebApi.Data.Entities;
+using CrmWebApi.DTOs;
+using CrmWebApi.DTOs.Policy;
 using CrmWebApi.DTOs.User;
 using CrmWebApi.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace CrmWebApi.Services.Impl;
 
-public class UserService(IUserRepository repo) : IUserService
+public class UserService(IUserRepository repo, IGenericRepository<Policy> policyRepo, IMemoryCache cache) : IUserService
 {
-    public async Task<IEnumerable<UserResponse>> GetAllAsync() =>
-        await repo.QueryActive().Select(u => MapToResponse(u)).ToListAsync();
+    public async Task<PagedResponse<UserResponse>> GetAllAsync(int page, int pageSize)
+    {
+        var query = repo.QueryActive();
+        var total = await query.CountAsync();
+        var items = (await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync())
+            .Select(MapToResponse).ToList();
+        return new PagedResponse<UserResponse>(items, page, pageSize, total);
+    }
 
     public async Task<UserResponse> GetByIdAsync(int id)
     {
@@ -85,6 +94,27 @@ public class UserService(IUserRepository repo) : IUserService
         await repo.UnlinkPolicyAsync(userId, policyId);
         return await GetByIdAsync(userId);
     }
+
+    private const string AllKey = "policies";
+
+    public async Task<IEnumerable<PolicyResponse>> GetAllPoliciesAsync()
+    {
+        if (cache.TryGetValue(AllKey, out IEnumerable<PolicyResponse>? cached))
+            return cached!;
+        var result = (await policyRepo.FindAsync(p => !p.IsDeleted)).Select(MapToResponse).ToList();
+        cache.Set(AllKey, result, TimeSpan.FromMinutes(10));
+        return result;
+    }
+
+    public async Task<PolicyResponse> GetPolicyByIdAsync(int id)
+    {
+        var policy = await policyRepo.GetByIdAsync(id);
+        if (policy is null || policy.IsDeleted)
+            throw new KeyNotFoundException($"Политика {id} не найдена");
+        return MapToResponse(policy);
+    }
+
+    private static PolicyResponse MapToResponse(Policy p) => new(p.PolicyId, p.PolicyName);
 
     private static UserResponse MapToResponse(Usr u) => new(
         u.UsrId,

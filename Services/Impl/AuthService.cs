@@ -21,7 +21,7 @@ public class AuthService(
         if (await userRepo.ExistsAsync(u => u.UsrLogin == req.Login))
             throw new InvalidOperationException("Логин уже занят");
         
-        if (await userRepo.ExistsAsync(u => u.UsrEmail == req.Email))
+        if (req.Email != null && await userRepo.ExistsAsync(u => u.UsrEmail == req.Email))
             throw new InvalidOperationException("Пользователь с таким email уже существует");
 
         var user = new Usr

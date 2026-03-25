@@ -10,4 +10,7 @@ public class OrgRepository(AppDbContext db) : GenericRepository<Org>(db), IOrgRe
         _dbSet
             .Include(o => o.OrgType)
             .Where(o => !o.IsDeleted);
+
+    public IQueryable<OrgType> QueryOrgTypes() =>
+        _db.OrgTypes.AsNoTracking();
 }

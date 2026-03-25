@@ -7,21 +7,21 @@ namespace CrmWebApi.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService service) : ControllerBase
 {
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<IActionResult> Register([FromBody] RegisterRequest req)
     {
-        var result = await authService.RegisterAsync(req);
-        return Ok(result);
+        var result = await service.RegisterAsync(req);
+        return StatusCode(201, result);
     }
 
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginRequest req)
     {
-        var result = await authService.LoginAsync(req);
+        var result = await service.LoginAsync(req);
         return Ok(result);
     }
 
@@ -30,7 +30,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Refresh([FromBody] string refreshToken)
     {
-        var result = await authService.RefreshAsync(refreshToken);
+        var result = await service.RefreshAsync(refreshToken);
         return Ok(result);
     }
 
@@ -38,7 +38,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [Authorize]
     public async Task<IActionResult> Logout([FromBody] string refreshToken)
     {
-        await authService.LogoutAsync(refreshToken);
+        await service.LogoutAsync(refreshToken);
         return NoContent();
     }
 }

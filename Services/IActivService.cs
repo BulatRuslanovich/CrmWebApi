@@ -1,10 +1,11 @@
+using CrmWebApi.DTOs;
 using CrmWebApi.DTOs.Activ;
 
 namespace CrmWebApi.Services;
 
 public interface IActivService
 {
-    Task<IEnumerable<ActivResponse>> GetAllAsync(int? usrId = null);
+    Task<PagedResponse<ActivResponse>> GetAllAsync(int page, int pageSize, int? usrId = null);
     Task<ActivResponse> GetByIdAsync(int id);
     Task<ActivResponse> CreateAsync(int usrId, CreateActivRequest req);
     Task<ActivResponse> UpdateAsync(int id, UpdateActivRequest req);
