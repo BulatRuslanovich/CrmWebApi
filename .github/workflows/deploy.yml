@@ -22,7 +22,7 @@ jobs:
         run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Login to GHCR
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+        run: echo ${{ secrets.CR_PAT }} | docker login ghcr.io -u bulatruslanovich --password-stdin
 
       - name: Build image
         run: |
@@ -52,12 +52,12 @@ jobs:
 
               echo "🚀 Deploying $IMAGE"
 
-              docker login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+              docker login ghcr.io -u bulatruslanovich -p ${{ secrets.CR_PAT }}
 
               cd /root/CrmWebApi
 
               docker inspect $IMAGE >/dev/null 2>&1 || true
-              docker tag $(docker images -q $IMAGE_NAME:latest) crmwebapi:backup || true
+              ddocker tag $(docker images -q ghcr.io/bulatruslanovich/crmwebapi:latest) crmwebapi:backup || true
 
               sed -i "s|image: .*crmwebapi:.*|image: $IMAGE|g" docker-compose.yml
 
