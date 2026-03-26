@@ -57,7 +57,7 @@ jobs:
               cd /root/CrmWebApi
 
               docker inspect $IMAGE >/dev/null 2>&1 || true
-              ddocker tag $(docker images -q ghcr.io/bulatruslanovich/crmwebapi:latest) crmwebapi:backup || true
+              docker tag $(docker images -q ghcr.io/bulatruslanovich/crmwebapi:latest) crmwebapi:backup || true
 
               sed -i "s|image: .*crmwebapi:.*|image: $IMAGE|g" docker-compose.yml
 

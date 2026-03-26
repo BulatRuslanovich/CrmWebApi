@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17-alpine
+    image: postgres:18-alpine
     restart: unless-stopped
     environment:
       POSTGRES_DB: crm_db
@@ -18,7 +18,7 @@ services:
       retries: 10
 
   api:
-    image: ghcr.io/BulatRuslanovich/CrmWebApi:latest  
+    image: ghcr.io/bulatruslanovich/crmwebapi:latest  
     restart: unless-stopped
     depends_on:
       db:
