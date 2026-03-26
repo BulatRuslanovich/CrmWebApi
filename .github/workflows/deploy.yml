@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
+  IMAGE_NAME: ghcr.io/bulatruslanovich/crmwebapi
 
 jobs:
   build-and-push:
@@ -57,9 +57,9 @@ jobs:
               cd /root/CrmWebApi
 
               docker inspect $IMAGE >/dev/null 2>&1 || true
-              docker tag $(docker images -q $IMAGE_NAME:latest) CrmWebApi:backup || true
+              docker tag $(docker images -q $IMAGE_NAME:latest) crmwebapi:backup || true
 
-              sed -i "s|image: .*CrmWebApi:.*|image: $IMAGE|g" docker-compose.yml
+              sed -i "s|image: .*crmwebapi:.*|image: $IMAGE|g" docker-compose.yml
 
               docker compose pull
               docker compose up -d
