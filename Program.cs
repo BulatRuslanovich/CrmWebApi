@@ -25,17 +25,12 @@ builder.Services.AddDatabase(builder.Configuration);
 builder.Services.AddRepositories();
 builder.Services.AddJwt(builder.Configuration);
 builder.Services.AddAuthorization();
-var corsOrigins = builder.Configuration["Cors:AllowedOrigins"]
-    ?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-    ?? ["http://localhost:8081"];
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
-        policy.WithOrigins(corsOrigins)
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials());
+              .AllowAnyMethod());
 });
 
 var app = builder.Build();
