@@ -11,33 +11,33 @@ namespace CrmWebApi.Controllers;
 [Authorize]
 public class DrugsController(IDrugService service) : ControllerBase
 {
-    [HttpGet]
-    public async Task<PagedResponse<DrugResponse>> GetAll(
-        [FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
-        await service.GetAllAsync(page, Math.Min(pageSize, 100));
+	[HttpGet]
+	public async Task<PagedResponse<DrugResponse>> GetAll(
+		[FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
+		await service.GetAllAsync(page, Math.Min(pageSize, 100));
 
-    [HttpGet("{id:int}")]
-    public async Task<DrugResponse> GetById(int id) =>
-        await service.GetByIdAsync(id);
+	[HttpGet("{id:int}")]
+	public async Task<DrugResponse> GetById(int id) =>
+		await service.GetByIdAsync(id);
 
-    [HttpPost]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Create([FromBody] CreateDrugRequest req)
-    {
-        var result = await service.CreateAsync(req);
-        return CreatedAtAction(nameof(GetById), new { id = result.DrugId }, result);
-    }
+	[HttpPost]
+	[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> Create([FromBody] CreateDrugRequest req)
+	{
+		var result = await service.CreateAsync(req);
+		return CreatedAtAction(nameof(GetById), new { id = result.DrugId }, result);
+	}
 
-    [HttpPut("{id:int}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<DrugResponse> Update(int id, [FromBody] UpdateDrugRequest req) =>
-        await service.UpdateAsync(id, req);
+	[HttpPut("{id:int}")]
+	[Authorize(Roles = "Admin")]
+	public async Task<DrugResponse> Update(int id, [FromBody] UpdateDrugRequest req) =>
+		await service.UpdateAsync(id, req);
 
-    [HttpDelete("{id:int}")]
-    [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> Delete(int id)
-    {
-        await service.DeleteAsync(id);
-        return NoContent();
-    }
+	[HttpDelete("{id:int}")]
+	[Authorize(Roles = "Admin")]
+	public async Task<IActionResult> Delete(int id)
+	{
+		await service.DeleteAsync(id);
+		return NoContent();
+	}
 }

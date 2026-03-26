@@ -6,15 +6,15 @@ namespace CrmWebApi.Services;
 
 public interface IPhysService
 {
-    Task<PagedResponse<PhysResponse>> GetAllAsync(int page, int pageSize);
-    Task<PhysResponse> GetByIdAsync(int id);
-    Task<PhysResponse> CreateAsync(CreatePhysRequest req);
-    Task<PhysResponse> UpdateAsync(int id, UpdatePhysRequest req);
-    Task DeleteAsync(int id);
-    Task LinkOrgAsync(int physId, int orgId);
-    Task UnlinkOrgAsync(int physId, int orgId);
-    Task<IEnumerable<SpecResponse>> GetAllSpecsAsync();
-    Task<SpecResponse> GetSpecByIdAsync(int id);
-    Task<SpecResponse> CreateSpecAsync(CreateSpecRequest req);
-    Task DeleteSpecAsync(int id);
+	public Task<PagedResponse<PhysResponse>> GetAllAsync(int page, int pageSize);
+	public Task<PhysResponse> GetByIdAsync(int id);
+	public Task<PhysResponse> CreateAsync(CreatePhysRequest req);
+	public Task<PhysResponse> UpdateAsync(int id, UpdatePhysRequest req);
+	public Task DeleteAsync(int id);
+	public Task LinkOrgAsync(int physId, int orgId);
+	public Task UnlinkOrgAsync(int physId, int orgId);
+	public Task<IEnumerable<SpecResponse>> GetAllSpecsAsync();
+	public Task<SpecResponse> GetSpecByIdAsync(int id);
+	public Task<SpecResponse> CreateSpecAsync(CreateSpecRequest req);
+	public Task DeleteSpecAsync(int id);
 }

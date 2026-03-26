@@ -12,57 +12,57 @@ namespace CrmWebApi.Extensions;
 
 public static class ServiceExtensions
 {
-    public static IServiceCollection AddRepositories(this IServiceCollection services)
-    {
-        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-        services.AddScoped<IRefreshRepository, RefreshRepository>();
-        services.AddScoped<IUserRepository, UserRepository>();
-        services.AddScoped<IOrgRepository, OrgRepository>();
-        services.AddScoped<IPhysRepository, PhysRepository>();
-        services.AddScoped<IActivRepository, ActivRepository>();
-        return services;
-    }
+	public static IServiceCollection AddRepositories(this IServiceCollection services)
+	{
+		services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+		services.AddScoped<IRefreshRepository, RefreshRepository>();
+		services.AddScoped<IUserRepository, UserRepository>();
+		services.AddScoped<IOrgRepository, OrgRepository>();
+		services.AddScoped<IPhysRepository, PhysRepository>();
+		services.AddScoped<IActivRepository, ActivRepository>();
+		return services;
+	}
 
-    public static IServiceCollection AddServices(this IServiceCollection services)
-    {
-        services.AddScoped<IUserService, UserService>();
-        services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IDrugService, DrugService>();
-        services.AddScoped<IOrgService, OrgService>();
-        services.AddScoped<IPhysService, PhysService>();
-        services.AddScoped<IActivService, ActivService>();
-        return services;
-    }
+	public static IServiceCollection AddServices(this IServiceCollection services)
+	{
+		services.AddScoped<IUserService, UserService>();
+		services.AddScoped<IAuthService, AuthService>();
+		services.AddScoped<IDrugService, DrugService>();
+		services.AddScoped<IOrgService, OrgService>();
+		services.AddScoped<IPhysService, PhysService>();
+		services.AddScoped<IActivService, ActivService>();
+		return services;
+	}
 
-    public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration config)
-    {
-        services.AddDbContext<AppDbContext>(opt =>
-            opt.UseNpgsql(config.GetConnectionString("Default")));
-        return services;
-    }
+	public static IServiceCollection AddDatabase(this IServiceCollection services, IConfiguration config)
+	{
+		services.AddDbContext<AppDbContext>(opt =>
+			opt.UseNpgsql(config.GetConnectionString("Default")));
+		return services;
+	}
 
-     public static IServiceCollection AddJwt(this IServiceCollection services, IConfiguration config)
-    {
-        var secret = config["Jwt:Secret"]
-            ?? throw new InvalidOperationException("Jwt:Secret не задан в конфигурации");
+	public static IServiceCollection AddJwt(this IServiceCollection services, IConfiguration config)
+	{
+		var secret = config["Jwt:Secret"]
+			?? throw new InvalidOperationException("Jwt:Secret не задан в конфигурации");
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(opt =>
-            {
-                opt.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer           = true,
-                    ValidateAudience         = true,
-                    ValidateLifetime         = true,
-                    ValidateIssuerSigningKey  = true,
-                    ValidIssuer              = config["Jwt:Issuer"],
-                    ValidAudience            = config["Jwt:Audience"],
-                    IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
-                    ClockSkew                = TimeSpan.Zero
-                };
-            });
+		services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+			.AddJwtBearer(opt =>
+			{
+				opt.TokenValidationParameters = new TokenValidationParameters
+				{
+					ValidateIssuer = true,
+					ValidateAudience = true,
+					ValidateLifetime = true,
+					ValidateIssuerSigningKey = true,
+					ValidIssuer = config["Jwt:Issuer"],
+					ValidAudience = config["Jwt:Audience"],
+					IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+					ClockSkew = TimeSpan.Zero
+				};
+			});
 
-        return services;
-    }
+		return services;
+	}
 
 }

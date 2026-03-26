@@ -6,14 +6,14 @@ namespace CrmWebApi.Services;
 
 public interface IUserService
 {
-    Task<PagedResponse<UserResponse>> GetAllAsync(int page, int pageSize);
-    Task<UserResponse> GetByIdAsync(int id);
-    Task<UserResponse> CreateAsync(CreateUserRequest request);
-    Task<UserResponse> UpdateAsync(int id, UpdateUserRequest request);
-    Task DeleteAsync(int id);
-    Task ChangePasswordAsync(int id, ChangePasswordRequest request);
-    Task<UserResponse> LinkPolicyAsync(int userId, int policyId);
-    Task<UserResponse> UnlinkPolicyAsync(int userId, int policyId);
-    Task<IEnumerable<PolicyResponse>> GetAllPoliciesAsync();
-    Task<PolicyResponse> GetPolicyByIdAsync(int id);
+	public Task<PagedResponse<UserResponse>> GetAllAsync(int page, int pageSize);
+	public Task<UserResponse> GetByIdAsync(int id);
+	public Task<UserResponse> CreateAsync(CreateUserRequest request);
+	public Task<UserResponse> UpdateAsync(int id, UpdateUserRequest request);
+	public Task DeleteAsync(int id);
+	public Task ChangePasswordAsync(int id, ChangePasswordRequest request);
+	public Task<UserResponse> LinkPolicyAsync(int userId, int policyId);
+	public Task<UserResponse> UnlinkPolicyAsync(int userId, int policyId);
+	public Task<IEnumerable<PolicyResponse>> GetAllPoliciesAsync();
+	public Task<PolicyResponse> GetPolicyByIdAsync(int id);
 }

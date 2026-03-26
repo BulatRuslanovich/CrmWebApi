@@ -18,7 +18,7 @@ services:
       retries: 10
 
   api:
-    build: .
+    image: ghcr.io/BulatRuslanovich/CrmWebApi:latest  
     restart: unless-stopped
     depends_on:
       db:

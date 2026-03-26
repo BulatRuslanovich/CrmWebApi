@@ -5,6 +5,6 @@ namespace CrmWebApi.Repositories;
 
 public interface IRefreshRepository : IGenericRepository<Refresh>
 {
-    Task<Refresh?> GetByTokenHashAsync(string tokenHash);
-    Task RevokeAllForUserAsync(int usrId);
+	public Task<Refresh?> GetByTokenHashAsync(string tokenHash);
+	public Task RevokeAllForUserAsync(int usrId);
 }

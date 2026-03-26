@@ -4,8 +4,8 @@ namespace CrmWebApi.Repositories;
 
 public interface IActivRepository : IGenericRepository<Activ>
 {
-    IQueryable<Activ> QueryActive();
-    Task AddDrugsAsync(IEnumerable<ActivDrug> drugs);
-    Task LinkDrugAsync(int activId, int drugId);
-    Task UnlinkDrugAsync(int activId, int drugId);
+	public IQueryable<Activ> QueryActive();
+	public Task AddDrugsAsync(IEnumerable<ActivDrug> drugs);
+	public Task LinkDrugAsync(int activId, int drugId);
+	public Task UnlinkDrugAsync(int activId, int drugId);
 }

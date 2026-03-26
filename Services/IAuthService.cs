@@ -4,8 +4,8 @@ namespace CrmWebApi.Services;
 
 public interface IAuthService
 {
-    Task<AuthResponse> RegisterAsync(RegisterRequest req);
-    Task<AuthResponse> LoginAsync(LoginRequest req);
-    Task<AuthResponse> RefreshAsync(string refreshToken);
-    Task LogoutAsync(string refreshToken);
+	public Task<AuthResponse> RegisterAsync(RegisterRequest req);
+	public Task<AuthResponse> LoginAsync(LoginRequest req);
+	public Task<AuthResponse> RefreshAsync(string refreshToken);
+	public Task LogoutAsync(string refreshToken);
 }

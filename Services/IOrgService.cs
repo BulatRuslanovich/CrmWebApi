@@ -6,11 +6,11 @@ namespace CrmWebApi.Services;
 
 public interface IOrgService
 {
-    Task<PagedResponse<OrgResponse>> GetAllAsync(int page, int pageSize);
-    Task<OrgResponse> GetByIdAsync(int id);
-    Task<OrgResponse> CreateAsync(CreateOrgRequest req);
-    Task<OrgResponse> UpdateAsync(int id, UpdateOrgRequest req);
-    Task DeleteAsync(int id);
+	public Task<PagedResponse<OrgResponse>> GetAllAsync(int page, int pageSize);
+	public Task<OrgResponse> GetByIdAsync(int id);
+	public Task<OrgResponse> CreateAsync(CreateOrgRequest req);
+	public Task<OrgResponse> UpdateAsync(int id, UpdateOrgRequest req);
+	public Task DeleteAsync(int id);
 
-    Task<IEnumerable<OrgTypeResponse>> GetAllTypesAsync();
+	public Task<IEnumerable<OrgTypeResponse>> GetAllTypesAsync();
 }

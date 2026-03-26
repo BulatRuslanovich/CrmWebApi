@@ -5,9 +5,9 @@ namespace CrmWebApi.Services;
 
 public interface IDrugService
 {
-    Task<PagedResponse<DrugResponse>> GetAllAsync(int page, int pageSize);
-    Task<DrugResponse> GetByIdAsync(int id);
-    Task<DrugResponse> CreateAsync(CreateDrugRequest req);
-    Task<DrugResponse> UpdateAsync(int id, UpdateDrugRequest req);
-    Task DeleteAsync(int id);
+	public Task<PagedResponse<DrugResponse>> GetAllAsync(int page, int pageSize);
+	public Task<DrugResponse> GetByIdAsync(int id);
+	public Task<DrugResponse> CreateAsync(CreateDrugRequest req);
+	public Task<DrugResponse> UpdateAsync(int id, UpdateDrugRequest req);
+	public Task DeleteAsync(int id);
 }
