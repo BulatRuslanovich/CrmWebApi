@@ -25,7 +25,7 @@ public class Activ
 	public bool IsDeleted { get; set; }
 
 	public Usr Usr { get; set; } = null!;
-	public Org Org { get; set; } = null!;
+	public Organization Org { get; set; } = null!;
 	public Status Status { get; set; } = null!;
 	public ICollection<ActivDrug> ActivDrugs { get; set; } = [];
 }

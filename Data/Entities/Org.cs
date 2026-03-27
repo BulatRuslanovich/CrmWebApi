@@ -1,11 +1,13 @@
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CrmWebApi.Data.Entities;
 
 
 [Table("org")]
-public class Org
+public class Organization
 {
+	[Key]
 	[Column("org_id")]
 	public int OrgId { get; set; }
 	[Column("org_type_id")]

@@ -30,7 +30,7 @@ public class OrgService(IOrgRepository repo, IMemoryCache cache) : IOrgService
 
 	public async Task<OrgResponse> CreateAsync(CreateOrgRequest req)
 	{
-		var org = new Org
+		var org = new Organization
 		{
 			OrgTypeId = req.OrgTypeId,
 			OrgName = req.OrgName,
@@ -67,7 +67,7 @@ public class OrgService(IOrgRepository repo, IMemoryCache cache) : IOrgService
 		await repo.UpdateAsync(org);
 	}
 
-	private static OrgResponse MapToResponse(Org o) => new(
+	private static OrgResponse MapToResponse(Organization o) => new(
 		o.OrgId, o.OrgTypeId, o.OrgType.OrgTypeName,
 		o.OrgName, o.OrgInn, o.OrgLatitude, o.OrgLongitude, o.OrgAddress
 	);

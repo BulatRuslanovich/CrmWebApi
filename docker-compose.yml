@@ -31,6 +31,13 @@ services:
       Jwt__Issuer: PharmaCrmApi
       Jwt__Audience: PharmaCrmClient
       Cors__AllowedOrigins: ${CORS_ORIGINS}
+      Email__Host: smtp.gmail.com
+      Email__Port: "465"
+      Email__Username: gikirilcva@gmail.com
+      Email__Password: ${EMAIL_PASSWORD}
+      Email__FromAddress: gikirilcva@gmail.com
+      Email__FromName: CRM System
+
 
   caddy:
     image: caddy:2-alpine

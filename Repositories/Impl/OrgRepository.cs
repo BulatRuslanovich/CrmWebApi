@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CrmWebApi.Repositories.Impl;
 
-public class OrgRepository(AppDbContext db) : GenericRepository<Org>(db), IOrgRepository
+public class OrgRepository(AppDbContext db) : GenericRepository<Organization>(db), IOrgRepository
 {
-	public IQueryable<Org> QueryActive() =>
+	public IQueryable<Organization> QueryActive() =>
 		_dbSet
 			.Include(o => o.OrgType)
 			.Where(o => !o.IsDeleted);

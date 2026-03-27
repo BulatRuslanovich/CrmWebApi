@@ -16,6 +16,7 @@ public static class ServiceExtensions
 	{
 		services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 		services.AddScoped<IRefreshRepository, RefreshRepository>();
+		services.AddScoped<IEmailTokenRepository, EmailTokenRepository>();
 		services.AddScoped<IUserRepository, UserRepository>();
 		services.AddScoped<IOrgRepository, OrgRepository>();
 		services.AddScoped<IPhysRepository, PhysRepository>();
@@ -27,6 +28,7 @@ public static class ServiceExtensions
 	{
 		services.AddScoped<IUserService, UserService>();
 		services.AddScoped<IAuthService, AuthService>();
+		services.AddScoped<IEmailService, EmailService>();
 		services.AddScoped<IDrugService, DrugService>();
 		services.AddScoped<IOrgService, OrgService>();
 		services.AddScoped<IPhysService, PhysService>();

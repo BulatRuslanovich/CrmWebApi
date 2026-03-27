@@ -14,5 +14,5 @@ public class PhysOrg
 	public int OrgId { get; set; }
 
 	public Phys Phys { get; set; } = null!;
-	public Org Org { get; set; } = null!;
+	public Organization Org { get; set; } = null!;
 }

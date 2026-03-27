@@ -20,6 +20,21 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 
 	private static Task HandleExceptionAsync(HttpContext context, Exception ex)
 	{
+		context.Response.ContentType = "application/json";
+
+		if (ex is EmailNotConfirmedException notConfirmed)
+		{
+			context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+			var body = JsonSerializer.Serialize(new
+			{
+				status = (int)HttpStatusCode.Forbidden,
+				error = notConfirmed.Message,
+				email = notConfirmed.Email,
+				traceId = context.TraceIdentifier
+			});
+			return context.Response.WriteAsync(body);
+		}
+
 		var (status, message) = ex switch
 		{
 			KeyNotFoundException => (HttpStatusCode.NotFound, ex.Message),
@@ -29,7 +44,6 @@ public class ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddlewa
 			_ => (HttpStatusCode.InternalServerError, "Внутренняя ошибка сервера")
 		};
 
-		context.Response.ContentType = "application/json";
 		context.Response.StatusCode = (int)status;
 
 		var payload = JsonSerializer.Serialize(new

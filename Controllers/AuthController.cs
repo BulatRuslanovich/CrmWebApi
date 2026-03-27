@@ -14,7 +14,39 @@ public class AuthController(IAuthService service) : ControllerBase
 	public async Task<IActionResult> Register([FromBody] RegisterRequest req)
 	{
 		var result = await service.RegisterAsync(req);
-		return StatusCode(201, result);
+		return Accepted(result);
+	}
+
+	[HttpPost("confirm-email")]
+	[AllowAnonymous]
+	public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest req)
+	{
+		var result = await service.ConfirmEmailAsync(req);
+		return Ok(result);
+	}
+
+	[HttpPost("resend-confirmation")]
+	[AllowAnonymous]
+	public async Task<IActionResult> ResendConfirmation([FromBody] string email)
+	{
+		await service.ResendConfirmationAsync(email);
+		return NoContent();
+	}
+
+	[HttpPost("forgot-password")]
+	[AllowAnonymous]
+	public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
+	{
+		await service.ForgotPasswordAsync(req.Email);
+		return NoContent();
+	}
+
+	[HttpPost("reset-password")]
+	[AllowAnonymous]
+	public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
+	{
+		await service.ResetPasswordAsync(req);
+		return NoContent();
 	}
 
 	[HttpPost("login")]
@@ -25,7 +57,6 @@ public class AuthController(IAuthService service) : ControllerBase
 		return Ok(result);
 	}
 
-	// Получение новой пары токенов по refresh-токену
 	[HttpPost("refresh")]
 	[AllowAnonymous]
 	public async Task<IActionResult> Refresh([FromBody] string refreshToken)

@@ -8,7 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	public DbSet<OrgType> OrgTypes { get; set; }
 	public DbSet<Status> Statuses { get; set; }
 	public DbSet<Policy> Policies { get; set; }
-	public DbSet<Org> Orgs { get; set; }
+	public DbSet<Organization> Orgs { get; set; }
 	public DbSet<Spec> Specs { get; set; }
 	public DbSet<Phys> Physes { get; set; }
 	public DbSet<PhysOrg> PhysOrgs { get; set; }
@@ -18,6 +18,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 	public DbSet<Activ> Activs { get; set; }
 	public DbSet<ActivDrug> ActivDrugs { get; set; }
 	public DbSet<Refresh> Refreshes { get; set; }
+	public DbSet<EmailToken> EmailTokens { get; set; }
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
 	{

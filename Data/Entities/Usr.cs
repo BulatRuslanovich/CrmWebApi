@@ -21,6 +21,8 @@ public class Usr
 	public string UsrPasswordHash { get; set; } = null!;
 	[Column("is_deleted")]
 	public bool IsDeleted { get; set; }
+	[Column("is_email_confirmed")]
+	public bool IsEmailConfirmed { get; set; }
 
 	public ICollection<UsrPolicy> UsrPolicies { get; set; } = [];
 	public ICollection<Activ> Activs { get; set; } = [];
