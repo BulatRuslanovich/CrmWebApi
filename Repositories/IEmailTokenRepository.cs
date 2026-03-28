@@ -4,6 +4,6 @@ namespace CrmWebApi.Repositories;
 
 public interface IEmailTokenRepository : IGenericRepository<EmailToken>
 {
-	Task<EmailToken?> GetValidTokenAsync(string tokenHash, int tokenType);
-	Task DeleteAllForUserAsync(int usrId, int tokenType);
+	public Task<EmailToken?> GetValidTokenAsync(string tokenHash, int tokenType);
+	public Task DeleteAllForUserAsync(int usrId, int tokenType);
 }
