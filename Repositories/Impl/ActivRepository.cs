@@ -11,8 +11,7 @@ public class ActivRepository(AppDbContext db) : GenericRepository<Activ>(db), IA
 			.Include(a => a.Usr)
 			.Include(a => a.Org)
 			.Include(a => a.Status)
-			.Include(a => a.ActivDrugs).ThenInclude(ad => ad.Drug)
-			.Where(a => !a.IsDeleted);
+			.Include(a => a.ActivDrugs).ThenInclude(ad => ad.Drug);
 
 	public async Task AddDrugsAsync(IEnumerable<ActivDrug> drugs)
 	{

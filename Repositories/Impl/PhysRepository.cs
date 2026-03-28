@@ -9,8 +9,7 @@ public class PhysRepository(AppDbContext db) : GenericRepository<Phys>(db), IPhy
 	public IQueryable<Phys> QueryActive() =>
 		_dbSet
 			.Include(p => p.Spec)
-			.Include(p => p.PhysOrgs).ThenInclude(po => po.Org)
-			.Where(p => !p.IsDeleted);
+			.Include(p => p.PhysOrgs).ThenInclude(po => po.Org);
 
 	public async Task LinkOrgAsync(int physId, int orgId)
 	{

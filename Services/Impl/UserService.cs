@@ -8,7 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace CrmWebApi.Services.Impl;
 
-public class UserService(IUserRepository repo, IGenericRepository<Policy> policyRepo, IMemoryCache cache) : IUserService
+public class UserService(IUserRepository repo, IGenericRepository<Policy> policyRepo, IMemoryCache cache, ILogger<UserService> logger) : IUserService
 {
 	public async Task<PagedResponse<UserResponse>> GetAllAsync(int page, int pageSize)
 	{
@@ -46,6 +46,7 @@ public class UserService(IUserRepository repo, IGenericRepository<Policy> policy
 			.Select(policyId => new UsrPolicy { UsrId = user.UsrId, PolicyId = policyId });
 		await repo.AddPoliciesAsync(policies);
 
+		logger.LogInformation("Пользователь создан: {Login} (id={UsrId})", user.UsrLogin, user.UsrId);
 		return await GetByIdAsync(user.UsrId);
 	}
 
@@ -69,6 +70,7 @@ public class UserService(IUserRepository repo, IGenericRepository<Policy> policy
 			?? throw new KeyNotFoundException($"Пользователь {id} не найден");
 		user.IsDeleted = true;
 		await repo.UpdateAsync(user);
+		logger.LogInformation("Пользователь удалён: id={UsrId}", id);
 	}
 
 	public async Task ChangePasswordAsync(int id, ChangePasswordRequest req)
@@ -81,6 +83,7 @@ public class UserService(IUserRepository repo, IGenericRepository<Policy> policy
 
 		user.UsrPasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
 		await repo.UpdateAsync(user);
+		logger.LogInformation("Пароль изменён: id={UsrId}", id);
 	}
 
 	public async Task<UserResponse> LinkPolicyAsync(int userId, int policyId)
@@ -101,16 +104,15 @@ public class UserService(IUserRepository repo, IGenericRepository<Policy> policy
 	{
 		if (cache.TryGetValue(AllKey, out IEnumerable<PolicyResponse>? cached))
 			return cached!;
-		var result = (await policyRepo.FindAsync(p => !p.IsDeleted)).Select(MapToResponse).ToList();
+		var result = (await policyRepo.GetAllAsync()).Select(MapToResponse).ToList();
 		cache.Set(AllKey, result, TimeSpan.FromMinutes(10));
 		return result;
 	}
 
 	public async Task<PolicyResponse> GetPolicyByIdAsync(int id)
 	{
-		var policy = await policyRepo.GetByIdAsync(id);
-		if (policy is null || policy.IsDeleted)
-			throw new KeyNotFoundException($"Политика {id} не найдена");
+		var policy = await policyRepo.Query().FirstOrDefaultAsync(p => p.PolicyId == id)
+			?? throw new KeyNotFoundException($"Политика {id} не найдена");
 		return MapToResponse(policy);
 	}
 
@@ -123,6 +125,6 @@ public class UserService(IUserRepository repo, IGenericRepository<Policy> policy
 		u.UsrEmail,
 		u.UsrPhone,
 		u.UsrLogin,
-		u.UsrPolicies.Where(p => !p.Policy.IsDeleted).Select(p => p.Policy.PolicyName).ToList()
+		[.. u.UsrPolicies.Where(p => p.Policy is not null).Select(p => p.Policy.PolicyName)]
 	);
 }

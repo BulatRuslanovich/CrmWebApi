@@ -8,8 +8,7 @@ public class OrgRepository(AppDbContext db) : GenericRepository<Organization>(db
 {
 	public IQueryable<Organization> QueryActive() =>
 		_dbSet
-			.Include(o => o.OrgType)
-			.Where(o => !o.IsDeleted);
+			.Include(o => o.OrgType);
 
 	public IQueryable<OrgType> QueryOrgTypes() =>
 		_db.OrgTypes.AsNoTracking();

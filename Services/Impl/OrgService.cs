@@ -8,7 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace CrmWebApi.Services.Impl;
 
-public class OrgService(IOrgRepository repo, IMemoryCache cache) : IOrgService
+public class OrgService(IOrgRepository repo, IMemoryCache cache, ILogger<OrgService> logger) : IOrgService
 {
 	private const string OrgTypesKey = "org_types";
 
@@ -40,12 +40,13 @@ public class OrgService(IOrgRepository repo, IMemoryCache cache) : IOrgService
 			OrgAddress = req.Address
 		};
 		await repo.AddAsync(org);
+		logger.LogInformation("Организация создана: {OrgName} (id={OrgId})", org.OrgName, org.OrgId);
 		return await GetByIdAsync(org.OrgId);
 	}
 
 	public async Task<OrgResponse> UpdateAsync(int id, UpdateOrgRequest req)
 	{
-		var org = await repo.Query().FirstOrDefaultAsync(o => o.OrgId == id && !o.IsDeleted)
+		var org = await repo.Query().FirstOrDefaultAsync(o => o.OrgId == id)
 			?? throw new KeyNotFoundException($"Организация {id} не найдена");
 
 		org.OrgTypeId = req.OrgTypeId ?? org.OrgTypeId;
@@ -56,15 +57,17 @@ public class OrgService(IOrgRepository repo, IMemoryCache cache) : IOrgService
 		org.OrgAddress = req.Address ?? org.OrgAddress;
 
 		await repo.UpdateAsync(org);
+		logger.LogInformation("Организация обновлена: id={OrgId}", id);
 		return await GetByIdAsync(id);
 	}
 
 	public async Task DeleteAsync(int id)
 	{
-		var org = await repo.Query().FirstOrDefaultAsync(o => o.OrgId == id && !o.IsDeleted)
+		var org = await repo.Query().FirstOrDefaultAsync(o => o.OrgId == id)
 			?? throw new KeyNotFoundException($"Организация {id} не найдена");
 		org.IsDeleted = true;
 		await repo.UpdateAsync(org);
+		logger.LogInformation("Организация удалена: id={OrgId}", id);
 	}
 
 	private static OrgResponse MapToResponse(Organization o) => new(

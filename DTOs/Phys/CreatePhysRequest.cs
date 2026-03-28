@@ -1,11 +1,13 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace CrmWebApi.DTOs.Phys;
 
 public record CreatePhysRequest(
 	int? SpecId,
-	string? FirstName,
-	string LastName,
-	string? MiddleName,
-	string? Phone,
-	string? Email,
-	string? Position
+	[MaxLength(100)] string? FirstName,
+	[Required, MaxLength(100)] string LastName,
+	[MaxLength(100)] string? MiddleName,
+	[MaxLength(20)] string? Phone,
+	[EmailAddress, MaxLength(200)] string? Email,
+	[MaxLength(200)] string? Position
 );

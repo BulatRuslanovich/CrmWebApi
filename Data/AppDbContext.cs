@@ -33,5 +33,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 		modelBuilder.Entity<ActivDrug>()
 			.HasIndex(ad => new { ad.ActivId, ad.DrugId })
 			.IsUnique();
+
+		modelBuilder.Entity<Usr>().HasQueryFilter(u => !u.IsDeleted);
+		modelBuilder.Entity<Drug>().HasQueryFilter(d => !d.IsDeleted);
+		modelBuilder.Entity<Phys>().HasQueryFilter(p => !p.IsDeleted);
+		modelBuilder.Entity<Organization>().HasQueryFilter(o => !o.IsDeleted);
+		modelBuilder.Entity<Activ>().HasQueryFilter(a => !a.IsDeleted);
+		modelBuilder.Entity<Policy>().HasQueryFilter(p => !p.IsDeleted);
+		modelBuilder.Entity<Spec>().HasQueryFilter(s => !s.IsDeleted);
 	}
 }

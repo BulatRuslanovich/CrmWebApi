@@ -8,8 +8,7 @@ public class UserRepository(AppDbContext db) : GenericRepository<Usr>(db), IUser
 {
 	public IQueryable<Usr> QueryActive() =>
 		_dbSet
-			.Include(u => u.UsrPolicies).ThenInclude(up => up.Policy)
-			.Where(u => !u.IsDeleted);
+			.Include(u => u.UsrPolicies).ThenInclude(up => up.Policy);
 
 	public async Task AddPoliciesAsync(IEnumerable<UsrPolicy> policies)
 	{

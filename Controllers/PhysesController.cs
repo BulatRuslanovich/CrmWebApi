@@ -38,7 +38,7 @@ public class PhysesController(IPhysService physService) : ControllerBase
 	[HttpGet]
 	public async Task<PagedResponse<PhysResponse>> GetAll(
 		[FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
-		await physService.GetAllAsync(page, Math.Min(pageSize, 100));
+		await physService.GetAllAsync(Math.Max(page, 1), Math.Clamp(pageSize, 1, 100));
 
 	[HttpGet("{id:int}")]
 	public async Task<PhysResponse> GetById(int id) =>

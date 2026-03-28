@@ -28,11 +28,8 @@ public class AuthService(
 		if (req.Email is null or "")
 			throw new ArgumentException("Email обязателен для регистрации");
 
-		if (await userRepo.ExistsAsync(u => u.UsrLogin == req.Login))
-			throw new InvalidOperationException("Логин уже занят");
-
-		if (await userRepo.ExistsAsync(u => u.UsrEmail == req.Email))
-			throw new InvalidOperationException("Пользователь с таким email уже существует");
+		if (await userRepo.ExistsAsync(u => u.UsrLogin == req.Login || u.UsrEmail == req.Email))
+			throw new InvalidOperationException("Пользователь с такими данными уже зарегистрирован");
 
 		var user = new Usr
 		{
@@ -251,7 +248,7 @@ public class AuthService(
 			new(ClaimTypes.Name, user.UsrLogin)
 		};
 		claims.AddRange(user.UsrPolicies
-			.Where(p => !p.Policy.IsDeleted)
+			.Where(p => p.Policy is not null)
 			.Select(p => new Claim(ClaimTypes.Role, p.Policy.PolicyName)));
 
 		var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
@@ -289,6 +286,6 @@ public class AuthService(
 		u.UsrEmail,
 		u.UsrPhone,
 		u.UsrLogin,
-		[.. u.UsrPolicies.Where(p => !p.Policy.IsDeleted).Select(p => p.Policy.PolicyName)]
+		[.. u.UsrPolicies.Where(p => p.Policy is not null).Select(p => p.Policy.PolicyName)]
 	);
 }

@@ -20,7 +20,7 @@ public class ActivsController(IActivService service) : ControllerBase
 	{
 		var usrId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 		var isAdmin = User.IsInRole("Admin");
-		return await service.GetAllAsync(page, Math.Min(pageSize, 100), isAdmin ? null : usrId);
+		return await service.GetAllAsync(Math.Max(page, 1), Math.Clamp(pageSize, 1, 100), isAdmin ? null : usrId);
 	}
 
 

@@ -5,11 +5,13 @@ using CrmWebApi.DTOs.Spec;
 using CrmWebApi.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 
 namespace CrmWebApi.Services.Impl;
 
-public class PhysService(IPhysRepository repo, IGenericRepository<Spec> specRepo, IMemoryCache cache) : IPhysService
+public class PhysService(IPhysRepository repo, IGenericRepository<Spec> specRepo, IMemoryCache cache, ILogger<PhysService> logger) : IPhysService
 {
+	private CancellationTokenSource _cts = new();
 	public async Task<PagedResponse<PhysResponse>> GetAllAsync(int page, int pageSize)
 	{
 		var query = repo.QueryActive();
@@ -39,12 +41,13 @@ public class PhysService(IPhysRepository repo, IGenericRepository<Spec> specRepo
 			PhysPosition = req.Position
 		};
 		await repo.AddAsync(phys);
+		logger.LogInformation("Физлицо создано: id={PhysId}", phys.PhysId);
 		return await GetByIdAsync(phys.PhysId);
 	}
 
 	public async Task<PhysResponse> UpdateAsync(int id, UpdatePhysRequest req)
 	{
-		var phys = await repo.Query().FirstOrDefaultAsync(p => p.PhysId == id && !p.IsDeleted)
+		var phys = await repo.Query().FirstOrDefaultAsync(p => p.PhysId == id)
 			?? throw new KeyNotFoundException($"Физическое лицо {id} не найдено");
 
 		phys.SpecId = req.SpecId ?? phys.SpecId;
@@ -56,15 +59,17 @@ public class PhysService(IPhysRepository repo, IGenericRepository<Spec> specRepo
 		phys.PhysPosition = req.Position ?? phys.PhysPosition;
 
 		await repo.UpdateAsync(phys);
+		logger.LogInformation("Физлицо обновлено: id={PhysId}", id);
 		return await GetByIdAsync(id);
 	}
 
 	public async Task DeleteAsync(int id)
 	{
-		var phys = await repo.Query().FirstOrDefaultAsync(p => p.PhysId == id && !p.IsDeleted)
+		var phys = await repo.Query().FirstOrDefaultAsync(p => p.PhysId == id)
 			?? throw new KeyNotFoundException($"Физическое лицо {id} не найдено");
 		phys.IsDeleted = true;
 		await repo.UpdateAsync(phys);
+		logger.LogInformation("Физлицо удалено: id={PhysId}", id);
 	}
 
 	public async Task LinkOrgAsync(int physId, int orgId) =>
@@ -77,7 +82,7 @@ public class PhysService(IPhysRepository repo, IGenericRepository<Spec> specRepo
 		p.PhysId, p.SpecId, p.Spec?.SpecName,
 		p.PhysFirstname, p.PhysLastname, p.PhysMiddlename,
 		p.PhysPhone, p.PhysEmail, p.PhysPosition,
-		[.. p.PhysOrgs.Where(po => !po.Org.IsDeleted).Select(po => po.Org.OrgName)]
+		[.. p.PhysOrgs.Where(po => po.Org is not null).Select(po => po.Org.OrgName)]
 	);
 
 	private const string AllKey = "specs";
@@ -86,16 +91,18 @@ public class PhysService(IPhysRepository repo, IGenericRepository<Spec> specRepo
 	{
 		if (cache.TryGetValue(AllKey, out IEnumerable<SpecResponse>? cached))
 			return cached!;
-		var result = (await specRepo.FindAsync(s => !s.IsDeleted)).Select(MapToResponse).ToList();
-		cache.Set(AllKey, result, TimeSpan.FromMinutes(10));
+		var result = (await specRepo.GetAllAsync()).Select(MapToResponse).ToList();
+		var options = new MemoryCacheEntryOptions()
+			.AddExpirationToken(new CancellationChangeToken(_cts.Token))
+			.SetAbsoluteExpiration(TimeSpan.FromMinutes(10));
+		cache.Set(AllKey, result, options);
 		return result;
 	}
 
 	public async Task<SpecResponse> GetSpecByIdAsync(int id)
 	{
-		var spec = await specRepo.GetByIdAsync(id);
-		if (spec is null || spec.IsDeleted)
-			throw new KeyNotFoundException($"Специальность {id} не найдена");
+		var spec = await specRepo.Query().FirstOrDefaultAsync(s => s.SpecId == id)
+			?? throw new KeyNotFoundException($"Специальность {id} не найдена");
 		return MapToResponse(spec);
 	}
 
@@ -103,18 +110,25 @@ public class PhysService(IPhysRepository repo, IGenericRepository<Spec> specRepo
 	{
 		var spec = new Spec { SpecName = req.SpecName };
 		await specRepo.AddAsync(spec);
-		cache.Remove(AllKey);
+		InvalidateCache();
+		logger.LogInformation("Специальность создана: {SpecName} (id={SpecId})", spec.SpecName, spec.SpecId);
 		return MapToResponse(spec);
 	}
 
 	public async Task DeleteSpecAsync(int id)
 	{
-		var spec = await repo.GetByIdAsync(id);
-		if (spec is null || spec.IsDeleted)
-			throw new KeyNotFoundException($"Специальность {id} не найдена");
+		var spec = await specRepo.Query().FirstOrDefaultAsync(s => s.SpecId == id)
+			?? throw new KeyNotFoundException($"Специальность {id} не найдена");
 		spec.IsDeleted = true;
-		await repo.UpdateAsync(spec);
-		cache.Remove(AllKey);
+		await specRepo.UpdateAsync(spec);
+		InvalidateCache();
+		logger.LogInformation("Специальность удалена: id={SpecId}", id);
+	}
+
+	private void InvalidateCache()
+	{
+		_cts.Cancel();
+		_cts = new CancellationTokenSource();
 	}
 
 	private static SpecResponse MapToResponse(Spec s) => new(s.SpecId, s.SpecName);

@@ -19,7 +19,7 @@ public class OrgsController(IOrgService service) : ControllerBase
 	[HttpGet]
 	public async Task<PagedResponse<OrgResponse>> GetAll(
 		[FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
-		await service.GetAllAsync(page, Math.Min(pageSize, 100));
+		await service.GetAllAsync(Math.Max(page, 1), Math.Clamp(pageSize, 1, 100));
 
 	[HttpGet("{id:int}")]
 	public async Task<OrgResponse> GetById(int id) =>

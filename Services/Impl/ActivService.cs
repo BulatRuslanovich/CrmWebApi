@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CrmWebApi.Services.Impl;
 
-public class ActivService(IActivRepository repo) : IActivService
+public class ActivService(IActivRepository repo, ILogger<ActivService> logger) : IActivService
 {
 	public async Task<PagedResponse<ActivResponse>> GetAllAsync(int page, int pageSize, int? usrId = null)
 	{
@@ -45,12 +45,13 @@ public class ActivService(IActivRepository repo) : IActivService
 			.Select(drugId => new ActivDrug { ActivId = activ.ActivId, DrugId = drugId });
 		await repo.AddDrugsAsync(drugs);
 
+		logger.LogInformation("Активность создана: id={ActivId}, usr={UsrId}", activ.ActivId, usrId);
 		return await GetByIdAsync(activ.ActivId);
 	}
 
 	public async Task<ActivResponse> UpdateAsync(int id, UpdateActivRequest req)
 	{
-		var activ = await repo.Query().FirstOrDefaultAsync(a => a.ActivId == id && !a.IsDeleted)
+		var activ = await repo.Query().FirstOrDefaultAsync(a => a.ActivId == id)
 			?? throw new KeyNotFoundException($"Активность {id} не найдена");
 
 		activ.StatusId = req.StatusId ?? activ.StatusId;
@@ -60,15 +61,17 @@ public class ActivService(IActivRepository repo) : IActivService
 		activ.ActivResult = req.Result ?? activ.ActivResult;
 
 		await repo.UpdateAsync(activ);
+		logger.LogInformation("Активность обновлена: id={ActivId}", id);
 		return await GetByIdAsync(id);
 	}
 
 	public async Task DeleteAsync(int id)
 	{
-		var activ = await repo.Query().FirstOrDefaultAsync(a => a.ActivId == id && !a.IsDeleted)
+		var activ = await repo.Query().FirstOrDefaultAsync(a => a.ActivId == id)
 			?? throw new KeyNotFoundException($"Активность {id} не найдена");
 		activ.IsDeleted = true;
 		await repo.UpdateAsync(activ);
+		logger.LogInformation("Активность удалена: id={ActivId}", id);
 	}
 
 	public async Task LinkDrugAsync(int activId, int drugId) =>
@@ -83,6 +86,6 @@ public class ActivService(IActivRepository repo) : IActivService
 		a.StatusId, a.Status.StatusName,
 		a.ActivStart, a.ActivEnd,
 		a.ActivDescription, a.ActivResult,
-		[.. a.ActivDrugs.Where(ad => !ad.Drug.IsDeleted).Select(ad => ad.Drug.DrugName)]
+		[.. a.ActivDrugs.Where(ad => ad.Drug is not null).Select(ad => ad.Drug.DrugName)]
 	);
 }

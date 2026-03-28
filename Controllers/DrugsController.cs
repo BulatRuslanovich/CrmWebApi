@@ -14,7 +14,7 @@ public class DrugsController(IDrugService service) : ControllerBase
 	[HttpGet]
 	public async Task<PagedResponse<DrugResponse>> GetAll(
 		[FromQuery] int page = 1, [FromQuery] int pageSize = 20) =>
-		await service.GetAllAsync(page, Math.Min(pageSize, 100));
+		await service.GetAllAsync(Math.Max(page, 1), Math.Clamp(pageSize, 1, 100));
 
 	[HttpGet("{id:int}")]
 	public async Task<DrugResponse> GetById(int id) =>

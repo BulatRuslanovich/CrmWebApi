@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace CrmWebApi.Services.Impl;
 
-public class DrugService(IGenericRepository<Drug> repo, IMemoryCache cache) : IDrugService
+public class DrugService(IGenericRepository<Drug> repo, IMemoryCache cache, ILogger<DrugService> logger) : IDrugService
 {
 	private CancellationTokenSource _cts = new();
 
@@ -18,7 +18,7 @@ public class DrugService(IGenericRepository<Drug> repo, IMemoryCache cache) : ID
 		if (cache.TryGetValue(cacheKey, out PagedResponse<DrugResponse>? cached))
 			return cached!;
 
-		var query = repo.Query().Where(d => !d.IsDeleted);
+		var query = repo.Query();
 		var total = await query.CountAsync();
 		var items = (await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync())
 			.Select(MapToResponse).ToList();
@@ -33,9 +33,8 @@ public class DrugService(IGenericRepository<Drug> repo, IMemoryCache cache) : ID
 
 	public async Task<DrugResponse> GetByIdAsync(int id)
 	{
-		var drug = await repo.GetByIdAsync(id);
-		if (drug is null || drug.IsDeleted)
-			throw new KeyNotFoundException($"Препарат {id} не найден");
+		var drug = await repo.Query().FirstOrDefaultAsync(d => d.DrugId == id)
+			?? throw new KeyNotFoundException($"Препарат {id} не найден");
 		return MapToResponse(drug);
 	}
 
@@ -50,14 +49,14 @@ public class DrugService(IGenericRepository<Drug> repo, IMemoryCache cache) : ID
 		};
 		await repo.AddAsync(drug);
 		Invalidate();
+		logger.LogInformation("Препарат создан: {DrugName} (id={DrugId})", drug.DrugName, drug.DrugId);
 		return MapToResponse(drug);
 	}
 
 	public async Task<DrugResponse> UpdateAsync(int id, UpdateDrugRequest req)
 	{
-		var drug = await repo.GetByIdAsync(id);
-		if (drug is null || drug.IsDeleted)
-			throw new KeyNotFoundException($"Препарат {id} не найден");
+		var drug = await repo.Query().FirstOrDefaultAsync(d => d.DrugId == id)
+			?? throw new KeyNotFoundException($"Препарат {id} не найден");
 
 		drug.DrugName = req.DrugName ?? drug.DrugName;
 		drug.DrugBrand = req.Brand ?? drug.DrugBrand;
@@ -66,17 +65,18 @@ public class DrugService(IGenericRepository<Drug> repo, IMemoryCache cache) : ID
 
 		await repo.UpdateAsync(drug);
 		Invalidate();
+		logger.LogInformation("Препарат обновлён: id={DrugId}", id);
 		return MapToResponse(drug);
 	}
 
 	public async Task DeleteAsync(int id)
 	{
-		var drug = await repo.GetByIdAsync(id);
-		if (drug is null || drug.IsDeleted)
-			throw new KeyNotFoundException($"Препарат {id} не найден");
+		var drug = await repo.Query().FirstOrDefaultAsync(d => d.DrugId == id)
+			?? throw new KeyNotFoundException($"Препарат {id} не найден");
 		drug.IsDeleted = true;
 		await repo.UpdateAsync(drug);
 		Invalidate();
+		logger.LogInformation("Препарат удалён: id={DrugId}", id);
 	}
 
 	private void Invalidate()
