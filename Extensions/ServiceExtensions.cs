@@ -4,8 +4,8 @@ using CrmWebApi.Repositories;
 using CrmWebApi.Repositories.Impl;
 using CrmWebApi.Services;
 using CrmWebApi.Services.Impl;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
 namespace CrmWebApi.Extensions;
@@ -14,7 +14,6 @@ public static class ServiceExtensions
 {
 	public static IServiceCollection AddRepositories(this IServiceCollection services)
 	{
-		services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 		services.AddScoped<IRefreshRepository, RefreshRepository>();
 		services.AddScoped<IEmailTokenRepository, EmailTokenRepository>();
 		services.AddScoped<IUserRepository, UserRepository>();

@@ -1,3 +1,4 @@
+using CrmWebApi.Common;
 using CrmWebApi.DTOs;
 using CrmWebApi.DTOs.Drug;
 
@@ -5,9 +6,9 @@ namespace CrmWebApi.Services;
 
 public interface IDrugService
 {
-	public Task<PagedResponse<DrugResponse>> GetAllAsync(int page, int pageSize);
-	public Task<DrugResponse> GetByIdAsync(int id);
-	public Task<DrugResponse> CreateAsync(CreateDrugRequest req);
-	public Task<DrugResponse> UpdateAsync(int id, UpdateDrugRequest req);
-	public Task DeleteAsync(int id);
+    public Task<Result<PagedResponse<DrugResponse>>> GetAllAsync(int page, int pageSize);
+    public Task<Result<DrugResponse>> GetByIdAsync(int id);
+    public Task<Result<DrugResponse>> CreateAsync(CreateDrugRequest req);
+    public Task<Result<DrugResponse>> UpdateAsync(int id, UpdateDrugRequest req);
+    public Task<Result> DeleteAsync(int id);
 }

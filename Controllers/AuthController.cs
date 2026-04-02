@@ -5,71 +5,50 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CrmWebApi.Controllers;
 
-[ApiController]
 [Route("api/auth")]
-public class AuthController(IAuthService service) : ControllerBase
+public class AuthController(IAuthService service) : ApiController
 {
-	[HttpPost("register")]
-	[AllowAnonymous]
-	public async Task<IActionResult> Register([FromBody] RegisterRequest req)
-	{
-		var result = await service.RegisterAsync(req);
-		return Accepted(result);
-	}
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest req)
+    {
+        var result = await service.RegisterAsync(req);
+        if (!result.IsSuccess) return MapError(result.Error!);
+        return Accepted(result.Value);
+    }
 
-	[HttpPost("confirm-email")]
-	[AllowAnonymous]
-	public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest req)
-	{
-		var result = await service.ConfirmEmailAsync(req);
-		return Ok(result);
-	}
+    [HttpPost("confirm-email")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ConfirmEmail([FromBody] ConfirmEmailRequest req) =>
+        FromResult(await service.ConfirmEmailAsync(req));
 
-	[HttpPost("resend-confirmation")]
-	[AllowAnonymous]
-	public async Task<IActionResult> ResendConfirmation([FromBody] string email)
-	{
-		await service.ResendConfirmationAsync(email);
-		return NoContent();
-	}
+    [HttpPost("resend-confirmation")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResendConfirmation([FromBody] string email) =>
+        FromResult(await service.ResendConfirmationAsync(email));
 
-	[HttpPost("forgot-password")]
-	[AllowAnonymous]
-	public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req)
-	{
-		await service.ForgotPasswordAsync(req.Email);
-		return NoContent();
-	}
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest req) =>
+        FromResult(await service.ForgotPasswordAsync(req.Email));
 
-	[HttpPost("reset-password")]
-	[AllowAnonymous]
-	public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
-	{
-		await service.ResetPasswordAsync(req);
-		return NoContent();
-	}
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req) =>
+        FromResult(await service.ResetPasswordAsync(req));
 
-	[HttpPost("login")]
-	[AllowAnonymous]
-	public async Task<IActionResult> Login([FromBody] LoginRequest req)
-	{
-		var result = await service.LoginAsync(req);
-		return Ok(result);
-	}
+    [HttpPost("login")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Login([FromBody] LoginRequest req) =>
+        FromResult(await service.LoginAsync(req));
 
-	[HttpPost("refresh")]
-	[AllowAnonymous]
-	public async Task<IActionResult> Refresh([FromBody] string refreshToken)
-	{
-		var result = await service.RefreshAsync(refreshToken);
-		return Ok(result);
-	}
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Refresh([FromBody] string refreshToken) =>
+        FromResult(await service.RefreshAsync(refreshToken));
 
-	[HttpPost("logout")]
-	[Authorize]
-	public async Task<IActionResult> Logout([FromBody] string refreshToken)
-	{
-		await service.LogoutAsync(refreshToken);
-		return NoContent();
-	}
+    [HttpPost("logout")]
+    [Authorize]
+    public async Task<IActionResult> Logout([FromBody] string refreshToken) =>
+        FromResult(await service.LogoutAsync(refreshToken));
 }
