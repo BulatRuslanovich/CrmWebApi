@@ -39,6 +39,15 @@ services:
       Email__FromName: CRM System
 
 
+  frontend:
+    build:
+      context: ../crm-web-portal
+      args:
+        NEXT_PUBLIC_API_URL: https://crmwebapi.ru
+    restart: unless-stopped
+    depends_on:
+      - api
+
   caddy:
     image: caddy:2-alpine
     restart: unless-stopped
@@ -46,14 +55,13 @@ services:
       - "80:80"
       - "443:443"
       - "443:443/udp"
-    environment:
-      DOMAIN: ${DOMAIN}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     depends_on:
       - api
+      - frontend
 
 volumes:
   postgres_data:
