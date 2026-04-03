@@ -22,10 +22,6 @@ public class RefreshRepository(AppDbContext db) : IRefreshRepository
     public Task<Refresh?> GetByTokenHashAsync(string tokenHash) =>
         db.Refreshes.FirstOrDefaultAsync(r => r.RefreshTokenHash == tokenHash);
 
-    public async Task RevokeAllForUserAsync(int usrId)
-    {
-        var tokens = await db.Refreshes.Where(r => r.UsrId == usrId).ToListAsync();
-        db.Refreshes.RemoveRange(tokens);
-        await db.SaveChangesAsync();
-    }
+    public Task RevokeAllForUserAsync(int usrId) =>
+        db.Refreshes.Where(r => r.UsrId == usrId).ExecuteDeleteAsync();
 }

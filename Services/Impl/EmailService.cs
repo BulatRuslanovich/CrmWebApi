@@ -1,3 +1,4 @@
+using System.Net;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
@@ -6,31 +7,37 @@ namespace CrmWebApi.Services.Impl;
 
 public class EmailService(IConfiguration config) : IEmailService
 {
-	public Task SendEmailConfirmationAsync(string toEmail, string toName, string code) =>
-		SendAsync(toEmail, toName,
+	public Task SendEmailConfirmationAsync(string toEmail, string toName, string code)
+	{
+		var safeName = WebUtility.HtmlEncode(toName);
+		return SendAsync(toEmail, toName,
 			subject: "Подтверждение email — CRM",
 			html: $"""
 			       <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
 			         <h2 style="color:#2563EB">Подтвердите ваш email</h2>
-			         <p>Здравствуйте, {toName}!</p>
+			         <p>Здравствуйте, {safeName}!</p>
 			         <p>Ваш код подтверждения:</p>
 			         <div style="font-size:36px;font-weight:700;letter-spacing:8px;color:#2563EB;margin:24px 0">{code}</div>
 			         <p style="color:#6B7280;font-size:13px">Код действителен 24 часа. Если вы не регистрировались — проигнорируйте это письмо.</p>
 			       </div>
 			       """);
+	}
 
-	public Task SendPasswordResetAsync(string toEmail, string toName, string code) =>
-		SendAsync(toEmail, toName,
+	public Task SendPasswordResetAsync(string toEmail, string toName, string code)
+	{
+		var safeName = WebUtility.HtmlEncode(toName);
+		return SendAsync(toEmail, toName,
 			subject: "Сброс пароля — CRM",
 			html: $"""
 			       <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
 			         <h2 style="color:#2563EB">Сброс пароля</h2>
-			         <p>Здравствуйте, {toName}!</p>
+			         <p>Здравствуйте, {safeName}!</p>
 			         <p>Ваш код для сброса пароля:</p>
 			         <div style="font-size:36px;font-weight:700;letter-spacing:8px;color:#2563EB;margin:24px 0">{code}</div>
 			         <p style="color:#6B7280;font-size:13px">Код действителен 1 час. Если вы не запрашивали сброс — проигнорируйте это письмо.</p>
 			       </div>
 			       """);
+	}
 
 	private async Task SendAsync(string toEmail, string toName, string subject, string html)
 	{

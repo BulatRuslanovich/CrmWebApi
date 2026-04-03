@@ -41,11 +41,7 @@ public class ActivService(IActivRepository repo, ILogger<ActivService> logger) :
             ActivDescription = req.Description,
             ActivResult = req.Result
         };
-        await repo.AddAsync(activ);
-
-        var drugs = req.DrugIds.Distinct()
-            .Select(drugId => new ActivDrug { ActivId = activ.ActivId, DrugId = drugId });
-        await repo.AddDrugsAsync(drugs);
+        await repo.AddWithDrugsAsync(activ, req.DrugIds.Distinct());
 
         logger.LogInformation("Activity created: id={ActivId}, usr={UsrId}", activ.ActivId, usrId);
         return await GetByIdAsync(activ.ActivId);

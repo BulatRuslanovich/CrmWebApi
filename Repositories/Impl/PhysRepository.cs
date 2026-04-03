@@ -9,7 +9,8 @@ public class PhysRepository(AppDbContext db) : IPhysRepository
     public IQueryable<Phys> QueryActive() =>
         db.Physes
             .Include(p => p.Spec)
-            .Include(p => p.PhysOrgs).ThenInclude(po => po.Org);
+            .Include(p => p.PhysOrgs).ThenInclude(po => po.Org)
+            .AsNoTracking();
 
     public IQueryable<Phys> Query() => db.Physes.AsQueryable();
 

@@ -58,11 +58,8 @@ public class AuthService(
     public async Task<Result<AuthResponse>> ConfirmEmailAsync(ConfirmEmailRequest req)
     {
         var user = await userRepo.QueryActive().FirstOrDefaultAsync(u => u.UsrEmail == req.Email);
-        if (user is null)
-            return Error.NotFound("Пользователь не найден");
-
-        if (user.IsEmailConfirmed)
-            return Error.Validation("Email уже подтверждён");
+        if (user is null || user.IsEmailConfirmed)
+            return Error.Validation("Неверный или истёкший код");
 
         var otpResult = await VerifyOtpAsync(user.UsrId, req.Code, TokenTypeConfirmation);
         if (!otpResult.IsSuccess)
@@ -78,11 +75,8 @@ public class AuthService(
     public async Task<Result> ResendConfirmationAsync(string email)
     {
         var user = await userRepo.QueryActive().FirstOrDefaultAsync(u => u.UsrEmail == email);
-        if (user is null)
-            return Error.NotFound("Пользователь не найден");
-
-        if (user.IsEmailConfirmed)
-            return Error.Validation("Email уже подтверждён");
+        if (user is null || user.IsEmailConfirmed)
+            return Result.Success(); // silent — avoid enumeration
 
         await emailTokenRepo.DeleteAllForUserAsync(user.UsrId, TokenTypeConfirmation);
         var code = await SendOtpAsync(user, TokenTypeConfirmation, expiryHours: 24);
@@ -136,11 +130,11 @@ public class AuthService(
         return await IssueTokensAsync(user);
     }
 
-    public async Task<Result> LogoutAsync(string refreshToken)
+    public async Task<Result> LogoutAsync(string refreshToken, int currentUserId)
     {
         var hash = HashToken(refreshToken);
         var stored = await refreshRepo.GetByTokenHashAsync(hash);
-        if (stored is not null)
+        if (stored is not null && stored.UsrId == currentUserId)
             await refreshRepo.DeleteAsync(stored);
         return Result.Success();
     }
@@ -170,7 +164,7 @@ public class AuthService(
     {
         var user = await userRepo.QueryActive().FirstOrDefaultAsync(u => u.UsrEmail == req.Email);
         if (user is null)
-            return Error.NotFound("Пользователь не найден");
+            return Error.Validation("Неверный или истёкший код");
 
         var otpResult = await VerifyOtpAsync(user.UsrId, req.Code, TokenTypePasswordReset);
         if (!otpResult.IsSuccess)
@@ -200,12 +194,26 @@ public class AuthService(
         return code;
     }
 
+    private const int MaxOtpAttempts = 5;
+
     private async Task<Result> VerifyOtpAsync(int usrId, string code, int tokenType)
     {
-        var hash = HashToken(code.Trim());
-        var token = await emailTokenRepo.GetValidTokenAsync(hash, tokenType);
-        if (token is null || token.UsrId != usrId)
+        var token = await emailTokenRepo.GetActiveByUserAndTypeAsync(usrId, tokenType);
+        if (token is null)
             return Error.Validation("Неверный или истёкший код");
+
+        token.AttemptCount++;
+        if (token.AttemptCount > MaxOtpAttempts)
+        {
+            await emailTokenRepo.DeleteAsync(token);
+            return Error.Validation("Слишком много попыток. Запросите новый код.");
+        }
+
+        if (token.TokenHash != HashToken(code.Trim()))
+        {
+            await emailTokenRepo.UpdateAsync(token);
+            return Error.Validation("Неверный или истёкший код");
+        }
 
         return Result.Success();
     }

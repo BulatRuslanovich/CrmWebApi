@@ -13,6 +13,12 @@ public class EmailTokenRepository(AppDbContext db) : IEmailTokenRepository
         return entity;
     }
 
+    public async Task UpdateAsync(EmailToken entity)
+    {
+        db.EmailTokens.Update(entity);
+        await db.SaveChangesAsync();
+    }
+
     public async Task DeleteAsync(EmailToken entity)
     {
         db.EmailTokens.Remove(entity);
@@ -25,10 +31,12 @@ public class EmailTokenRepository(AppDbContext db) : IEmailTokenRepository
             t.TokenType == tokenType &&
             t.ExpiresAt > DateTime.UtcNow);
 
-    public async Task DeleteAllForUserAsync(int usrId, int tokenType)
-    {
-        var tokens = await db.EmailTokens.Where(t => t.UsrId == usrId && t.TokenType == tokenType).ToListAsync();
-        db.EmailTokens.RemoveRange(tokens);
-        await db.SaveChangesAsync();
-    }
+    public Task<EmailToken?> GetActiveByUserAndTypeAsync(int usrId, int tokenType) =>
+        db.EmailTokens.FirstOrDefaultAsync(t =>
+            t.UsrId == usrId &&
+            t.TokenType == tokenType &&
+            t.ExpiresAt > DateTime.UtcNow);
+
+    public Task DeleteAllForUserAsync(int usrId, int tokenType) =>
+        db.EmailTokens.Where(t => t.UsrId == usrId && t.TokenType == tokenType).ExecuteDeleteAsync();
 }

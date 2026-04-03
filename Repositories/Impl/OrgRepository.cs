@@ -7,7 +7,7 @@ namespace CrmWebApi.Repositories.Impl;
 public class OrgRepository(AppDbContext db) : IOrgRepository
 {
     public IQueryable<Organization> QueryActive() =>
-        db.Orgs.Include(o => o.OrgType);
+        db.Orgs.Include(o => o.OrgType).AsNoTracking();
 
     public IQueryable<Organization> Query() => db.Orgs.AsQueryable();
 

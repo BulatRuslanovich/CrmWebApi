@@ -8,13 +8,22 @@ namespace CrmWebApi.Repositories.Impl;
 public class UserRepository(AppDbContext db) : IUserRepository
 {
     public IQueryable<Usr> QueryActive() =>
-        db.Usrs.Include(u => u.UsrPolicies).ThenInclude(up => up.Policy);
+        db.Usrs.Include(u => u.UsrPolicies).ThenInclude(up => up.Policy).AsNoTracking();
 
     public Task<bool> ExistsAsync(Expression<Func<Usr, bool>> predicate) =>
         db.Usrs.AnyAsync(predicate);
 
     public async Task<Usr> AddAsync(Usr entity)
     {
+        db.Usrs.Add(entity);
+        await db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Usr> AddWithPoliciesAsync(Usr entity, IEnumerable<int> policyIds)
+    {
+        foreach (var policyId in policyIds)
+            entity.UsrPolicies.Add(new UsrPolicy { PolicyId = policyId });
         db.Usrs.Add(entity);
         await db.SaveChangesAsync();
         return entity;

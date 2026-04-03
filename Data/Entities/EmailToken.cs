@@ -16,6 +16,8 @@ public class EmailToken
 	public int TokenType { get; set; }
 	[Column("expires_at")]
 	public DateTime ExpiresAt { get; set; }
+	[Column("attempt_count")]
+	public int AttemptCount { get; set; }
 
 	public Usr Usr { get; set; } = null!;
 }

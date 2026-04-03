@@ -1,11 +1,14 @@
+using System.Security.Claims;
 using CrmWebApi.DTOs.Auth;
 using CrmWebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CrmWebApi.Controllers;
 
 [Route("api/auth")]
+[EnableRateLimiting("auth")]
 public class AuthController(IAuthService service) : ApiController
 {
     [HttpPost("register")]
@@ -49,6 +52,9 @@ public class AuthController(IAuthService service) : ApiController
 
     [HttpPost("logout")]
     [Authorize]
-    public async Task<IActionResult> Logout([FromBody] string refreshToken) =>
-        FromResult(await service.LogoutAsync(refreshToken));
+    public async Task<IActionResult> Logout([FromBody] string refreshToken)
+    {
+        var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        return FromResult(await service.LogoutAsync(refreshToken, currentUserId));
+    }
 }

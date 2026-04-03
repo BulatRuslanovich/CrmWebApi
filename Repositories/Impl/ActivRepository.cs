@@ -11,12 +11,22 @@ public class ActivRepository(AppDbContext db) : IActivRepository
             .Include(a => a.Usr)
             .Include(a => a.Org)
             .Include(a => a.Status)
-            .Include(a => a.ActivDrugs).ThenInclude(ad => ad.Drug);
+            .Include(a => a.ActivDrugs).ThenInclude(ad => ad.Drug)
+            .AsNoTracking();
 
     public IQueryable<Activ> Query() => db.Activs.AsQueryable();
 
     public async Task<Activ> AddAsync(Activ entity)
     {
+        db.Activs.Add(entity);
+        await db.SaveChangesAsync();
+        return entity;
+    }
+
+    public async Task<Activ> AddWithDrugsAsync(Activ entity, IEnumerable<int> drugIds)
+    {
+        foreach (var drugId in drugIds)
+            entity.ActivDrugs.Add(new ActivDrug { DrugId = drugId });
         db.Activs.Add(entity);
         await db.SaveChangesAsync();
         return entity;

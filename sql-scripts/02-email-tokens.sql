@@ -14,3 +14,6 @@ CREATE TABLE email_token (
 );
 
 CREATE INDEX idx_email_token_usr ON email_token (usr_id);
+
+ALTER TABLE email_token ADD COLUMN attempt_count INTEGER NOT NULL DEFAULT 0;
+

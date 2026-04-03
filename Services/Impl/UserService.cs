@@ -10,7 +10,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace CrmWebApi.Services.Impl;
 
-public class UserService(IUserRepository repo, AppDbContext db, IMemoryCache cache, ILogger<UserService> logger) : IUserService
+public class UserService(IUserRepository repo, IRefreshRepository refreshRepo, AppDbContext db, IMemoryCache cache, ILogger<UserService> logger) : IUserService
 {
     public async Task<Result<PagedResponse<UserResponse>>> GetAllAsync(int page, int pageSize)
     {
@@ -43,11 +43,7 @@ public class UserService(IUserRepository repo, AppDbContext db, IMemoryCache cac
             UsrLogin = req.Login,
             UsrPasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password)
         };
-        await repo.AddAsync(user);
-
-        var policies = req.PolicyIds.Distinct()
-            .Select(policyId => new UsrPolicy { UsrId = user.UsrId, PolicyId = policyId });
-        await repo.AddPoliciesAsync(policies);
+        await repo.AddWithPoliciesAsync(user, req.PolicyIds.Distinct());
 
         logger.LogInformation("User created: {Login} (id={UsrId})", user.UsrLogin, user.UsrId);
         return await GetByIdAsync(user.UsrId);
@@ -76,6 +72,7 @@ public class UserService(IUserRepository repo, AppDbContext db, IMemoryCache cac
 
         user.IsDeleted = true;
         await repo.UpdateAsync(user);
+        await refreshRepo.RevokeAllForUserAsync(id);
         logger.LogInformation("User deleted: id={UsrId}", id);
         return Result.Success();
     }
