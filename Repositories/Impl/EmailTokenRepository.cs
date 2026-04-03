@@ -20,7 +20,10 @@ public class EmailTokenRepository(AppDbContext db) : IEmailTokenRepository
     }
 
     public Task<EmailToken?> GetValidTokenAsync(string tokenHash, int tokenType) =>
-        db.EmailTokens.FirstOrDefaultAsync(t => t.TokenHash == tokenHash && t.TokenType == tokenType);
+        db.EmailTokens.FirstOrDefaultAsync(t =>
+            t.TokenHash == tokenHash &&
+            t.TokenType == tokenType &&
+            t.ExpiresAt > DateTime.UtcNow);
 
     public async Task DeleteAllForUserAsync(int usrId, int tokenType)
     {

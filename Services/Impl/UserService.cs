@@ -17,7 +17,7 @@ public class UserService(IUserRepository repo, AppDbContext db, IMemoryCache cac
         var query = repo.QueryActive();
         var total = await query.CountAsync();
         var items = (await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync())
-            .Select(MapToResponse).ToList();
+            .Select(UserResponse.From).ToList();
         return new PagedResponse<UserResponse>(items, page, pageSize, total);
     }
 
@@ -26,7 +26,7 @@ public class UserService(IUserRepository repo, AppDbContext db, IMemoryCache cac
         var user = await repo.QueryActive().FirstOrDefaultAsync(u => u.UsrId == id);
         if (user is null)
             return Error.NotFound($"Пользователь {id} не найден");
-        return MapToResponse(user);
+        return UserResponse.From(user);
     }
 
     public async Task<Result<UserResponse>> CreateAsync(CreateUserRequest req)
@@ -49,7 +49,7 @@ public class UserService(IUserRepository repo, AppDbContext db, IMemoryCache cac
             .Select(policyId => new UsrPolicy { UsrId = user.UsrId, PolicyId = policyId });
         await repo.AddPoliciesAsync(policies);
 
-        logger.LogInformation("Пользователь создан: {Login} (id={UsrId})", user.UsrLogin, user.UsrId);
+        logger.LogInformation("User created: {Login} (id={UsrId})", user.UsrLogin, user.UsrId);
         return await GetByIdAsync(user.UsrId);
     }
 
@@ -76,7 +76,7 @@ public class UserService(IUserRepository repo, AppDbContext db, IMemoryCache cac
 
         user.IsDeleted = true;
         await repo.UpdateAsync(user);
-        logger.LogInformation("Пользователь удалён: id={UsrId}", id);
+        logger.LogInformation("User deleted: id={UsrId}", id);
         return Result.Success();
     }
 
@@ -91,7 +91,7 @@ public class UserService(IUserRepository repo, AppDbContext db, IMemoryCache cac
 
         user.UsrPasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
         await repo.UpdateAsync(user);
-        logger.LogInformation("Пароль изменён: id={UsrId}", id);
+        logger.LogInformation("Password changed: id={UsrId}", id);
         return Result.Success();
     }
 
@@ -127,13 +127,4 @@ public class UserService(IUserRepository repo, AppDbContext db, IMemoryCache cac
         return new PolicyResponse(policy.PolicyId, policy.PolicyName);
     }
 
-    private static UserResponse MapToResponse(Usr u) => new(
-        u.UsrId,
-        u.UsrFirstname,
-        u.UsrLastname,
-        u.UsrEmail,
-        u.UsrPhone,
-        u.UsrLogin,
-        [.. u.UsrPolicies.Where(p => p.Policy is not null).Select(p => p.Policy.PolicyName)]
-    );
 }

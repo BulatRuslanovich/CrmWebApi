@@ -33,11 +33,8 @@ public class ActivsController(IActivService service) : ApiController
     [HttpPut("{id:int}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateActivRequest req)
     {
-        var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var activ = await service.GetByIdAsync(id);
-        if (!activ.IsSuccess) return MapError(activ.Error!);
-        if (activ.Value!.UsrId != currentUserId && !User.IsInRole("Admin"))
-            return Forbid();
+        var guard = await AuthorizeOwnerAsync(id);
+        if (guard is not null) return guard;
         return FromResult(await service.UpdateAsync(id, req));
     }
 
@@ -49,22 +46,29 @@ public class ActivsController(IActivService service) : ApiController
     [HttpPost("{activId:int}/drugs/{drugId:int}")]
     public async Task<IActionResult> LinkDrug(int activId, int drugId)
     {
-        var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-        var activ = await service.GetByIdAsync(activId);
-        if (!activ.IsSuccess) return MapError(activ.Error!);
-        if (activ.Value!.UsrId != currentUserId && !User.IsInRole("Admin"))
-            return Forbid();
+        var guard = await AuthorizeOwnerAsync(activId);
+        if (guard is not null) return guard;
         return FromResult(await service.LinkDrugAsync(activId, drugId));
     }
 
     [HttpDelete("{activId:int}/drugs/{drugId:int}")]
     public async Task<IActionResult> UnlinkDrug(int activId, int drugId)
     {
-        var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var guard = await AuthorizeOwnerAsync(activId);
+        if (guard is not null) return guard;
+        return FromResult(await service.UnlinkDrugAsync(activId, drugId));
+    }
+
+    // Returns non-null IActionResult if the request should be rejected (not found / forbidden).
+    private async Task<IActionResult?> AuthorizeOwnerAsync(int activId)
+    {
         var activ = await service.GetByIdAsync(activId);
         if (!activ.IsSuccess) return MapError(activ.Error!);
+
+        var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         if (activ.Value!.UsrId != currentUserId && !User.IsInRole("Admin"))
             return Forbid();
-        return FromResult(await service.UnlinkDrugAsync(activId, drugId));
+
+        return null;
     }
 }

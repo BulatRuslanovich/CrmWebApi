@@ -46,7 +46,7 @@ public class PhysService(IPhysRepository repo, AppDbContext db, IMemoryCache cac
             PhysPosition = req.Position
         };
         await repo.AddAsync(phys);
-        logger.LogInformation("Физлицо создано: id={PhysId}", phys.PhysId);
+        logger.LogInformation("Contact created: id={PhysId}", phys.PhysId);
         return await GetByIdAsync(phys.PhysId);
     }
 
@@ -65,7 +65,7 @@ public class PhysService(IPhysRepository repo, AppDbContext db, IMemoryCache cac
         phys.PhysPosition = req.Position ?? phys.PhysPosition;
 
         await repo.UpdateAsync(phys);
-        logger.LogInformation("Физлицо обновлено: id={PhysId}", id);
+        logger.LogInformation("Contact updated: id={PhysId}", id);
         return await GetByIdAsync(id);
     }
 
@@ -77,7 +77,7 @@ public class PhysService(IPhysRepository repo, AppDbContext db, IMemoryCache cac
 
         phys.IsDeleted = true;
         await repo.UpdateAsync(phys);
-        logger.LogInformation("Физлицо удалено: id={PhysId}", id);
+        logger.LogInformation("Contact deleted: id={PhysId}", id);
         return Result.Success();
     }
 
@@ -120,7 +120,7 @@ public class PhysService(IPhysRepository repo, AppDbContext db, IMemoryCache cac
         db.Specs.Add(spec);
         await db.SaveChangesAsync();
         InvalidateCache();
-        logger.LogInformation("Специальность создана: {SpecName} (id={SpecId})", spec.SpecName, spec.SpecId);
+        logger.LogInformation("Specialty created: {SpecName} (id={SpecId})", spec.SpecName, spec.SpecId);
         return new SpecResponse(spec.SpecId, spec.SpecName);
     }
 
@@ -133,7 +133,7 @@ public class PhysService(IPhysRepository repo, AppDbContext db, IMemoryCache cac
         spec.IsDeleted = true;
         await db.SaveChangesAsync();
         InvalidateCache();
-        logger.LogInformation("Специальность удалена: id={SpecId}", id);
+        logger.LogInformation("Specialty deleted: id={SpecId}", id);
         return Result.Success();
     }
 

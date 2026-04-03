@@ -7,7 +7,7 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext ctx, Exception ex, CancellationToken ct)
     {
-        logger.LogError(ex, "Необработанное исключение: {Message}", ex.Message);
+        logger.LogError(ex, "Unhandled exception: {Message}", ex.Message);
 
         ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;
         await ctx.Response.WriteAsJsonAsync(new ProblemDetails

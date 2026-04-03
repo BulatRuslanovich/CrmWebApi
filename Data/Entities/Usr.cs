@@ -26,5 +26,4 @@ public class Usr
 
 	public ICollection<UsrPolicy> UsrPolicies { get; set; } = [];
 	public ICollection<Activ> Activs { get; set; } = [];
-	public ICollection<Refresh> Refreshes { get; set; } = [];
 }

@@ -20,7 +20,7 @@ public class RefreshRepository(AppDbContext db) : IRefreshRepository
     }
 
     public Task<Refresh?> GetByTokenHashAsync(string tokenHash) =>
-        db.Refreshes.Include(r => r.Usr).FirstOrDefaultAsync(r => r.RefreshTokenHash == tokenHash);
+        db.Refreshes.FirstOrDefaultAsync(r => r.RefreshTokenHash == tokenHash);
 
     public async Task RevokeAllForUserAsync(int usrId)
     {

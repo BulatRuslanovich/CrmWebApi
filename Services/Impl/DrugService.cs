@@ -51,7 +51,7 @@ public class DrugService(AppDbContext db, IMemoryCache cache, ILogger<DrugServic
         db.Drugs.Add(drug);
         await db.SaveChangesAsync();
         Invalidate();
-        logger.LogInformation("Препарат создан: {DrugName} (id={DrugId})", drug.DrugName, drug.DrugId);
+        logger.LogInformation("Drug created: {DrugName} (id={DrugId})", drug.DrugName, drug.DrugId);
         return MapToResponse(drug);
     }
 
@@ -68,7 +68,7 @@ public class DrugService(AppDbContext db, IMemoryCache cache, ILogger<DrugServic
 
         await db.SaveChangesAsync();
         Invalidate();
-        logger.LogInformation("Препарат обновлён: id={DrugId}", id);
+        logger.LogInformation("Drug updated: id={DrugId}", id);
         return MapToResponse(drug);
     }
 
@@ -81,7 +81,7 @@ public class DrugService(AppDbContext db, IMemoryCache cache, ILogger<DrugServic
         drug.IsDeleted = true;
         await db.SaveChangesAsync();
         Invalidate();
-        logger.LogInformation("Препарат удалён: id={DrugId}", id);
+        logger.LogInformation("Drug deleted: id={DrugId}", id);
         return Result.Success();
     }
 

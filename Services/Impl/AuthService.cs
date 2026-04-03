@@ -40,16 +40,16 @@ public class AuthService(
         };
         await userRepo.AddAsync(user);
 
-        await SendOtpAsync(user, TokenTypeConfirmation, expiryHours: 24);
+        var code = await SendOtpAsync(user, TokenTypeConfirmation, expiryHours: 24);
 
         var displayName = BuildDisplayName(req.FirstName, req.LastName, req.Login);
         try
         {
-            await emailService.SendEmailConfirmationAsync(req.Email!, displayName, GetPendingOtp(user.UsrId, TokenTypeConfirmation));
+            await emailService.SendEmailConfirmationAsync(req.Email!, displayName, code);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Не удалось отправить письмо подтверждения на {Email}", req.Email);
+            logger.LogError(ex, "Failed to send confirmation email to {Email}", req.Email);
         }
 
         return new PendingConfirmationResponse(req.Email!);
@@ -72,8 +72,7 @@ public class AuthService(
         await userRepo.UpdateAsync(user);
         await emailTokenRepo.DeleteAllForUserAsync(user.UsrId, TokenTypeConfirmation);
 
-        var fullUser = await userRepo.QueryActive().FirstAsync(u => u.UsrId == user.UsrId);
-        return await IssueTokensAsync(fullUser);
+        return await IssueTokensAsync(user);
     }
 
     public async Task<Result> ResendConfirmationAsync(string email)
@@ -86,16 +85,16 @@ public class AuthService(
             return Error.Validation("Email уже подтверждён");
 
         await emailTokenRepo.DeleteAllForUserAsync(user.UsrId, TokenTypeConfirmation);
-        await SendOtpAsync(user, TokenTypeConfirmation, expiryHours: 24);
+        var code = await SendOtpAsync(user, TokenTypeConfirmation, expiryHours: 24);
 
         var name = BuildDisplayName(user.UsrFirstname, user.UsrLastname, user.UsrLogin);
         try
         {
-            await emailService.SendEmailConfirmationAsync(email, name, GetPendingOtp(user.UsrId, TokenTypeConfirmation));
+            await emailService.SendEmailConfirmationAsync(email, name, code);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Не удалось отправить письмо подтверждения на {Email}", email);
+            logger.LogError(ex, "Failed to send confirmation email to {Email}", email);
             return Error.Failure("Не удалось отправить письмо. Попробуйте позже.");
         }
         return Result.Success();
@@ -149,19 +148,19 @@ public class AuthService(
     public async Task<Result> ForgotPasswordAsync(string email)
     {
         var user = await userRepo.QueryActive().FirstOrDefaultAsync(u => u.UsrEmail == email);
-        if (user is null) return Result.Success(); // silent — avoid enumeration
+        if (user is null) return Result.Success();
 
         await emailTokenRepo.DeleteAllForUserAsync(user.UsrId, TokenTypePasswordReset);
-        await SendOtpAsync(user, TokenTypePasswordReset, expiryHours: 1);
+        var code = await SendOtpAsync(user, TokenTypePasswordReset, expiryHours: 1);
 
         var name = BuildDisplayName(user.UsrFirstname, user.UsrLastname, user.UsrLogin);
         try
         {
-            await emailService.SendPasswordResetAsync(email, name, GetPendingOtp(user.UsrId, TokenTypePasswordReset));
+            await emailService.SendPasswordResetAsync(email, name, code);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Не удалось отправить письмо сброса пароля на {Email}", email);
+            logger.LogError(ex, "Failed to send password reset email to {Email}", email);
             return Error.Failure("Не удалось отправить письмо. Попробуйте позже.");
         }
         return Result.Success();
@@ -186,11 +185,10 @@ public class AuthService(
 
     // ── helpers ─────────────────────────────────────────────────────────────
 
-    private readonly Dictionary<(int, int), string> _pendingCodes = new();
-
-    private async Task SendOtpAsync(Usr user, int tokenType, int expiryHours)
+    private async Task<string> SendOtpAsync(Usr user, int tokenType, int expiryHours)
     {
-        var code = Random.Shared.Next(100_000, 1_000_000).ToString();
+        var codeBytes = RandomNumberGenerator.GetBytes(4);
+        var code = (BitConverter.ToUInt32(codeBytes) % 900_000 + 100_000).ToString();
         var stored = new EmailToken
         {
             UsrId = user.UsrId,
@@ -199,14 +197,7 @@ public class AuthService(
             ExpiresAt = DateTime.UtcNow.AddHours(expiryHours)
         };
         await emailTokenRepo.AddAsync(stored);
-        _pendingCodes[(user.UsrId, tokenType)] = code;
-    }
-
-    private string GetPendingOtp(int usrId, int tokenType)
-    {
-        if (_pendingCodes.TryGetValue((usrId, tokenType), out var code))
-            return code;
-        throw new InvalidOperationException("OTP не был создан в этом запросе");
+        return code;
     }
 
     private async Task<Result> VerifyOtpAsync(int usrId, string code, int tokenType)
@@ -216,11 +207,6 @@ public class AuthService(
         if (token is null || token.UsrId != usrId)
             return Error.Validation("Неверный или истёкший код");
 
-        if (token.ExpiresAt < DateTime.UtcNow)
-        {
-            await emailTokenRepo.DeleteAsync(token);
-            return Error.Validation("Код истёк");
-        }
         return Result.Success();
     }
 
@@ -229,7 +215,7 @@ public class AuthService(
         var accessToken = GenerateAccessToken(user);
         var (raw, stored) = GenerateRefreshToken(user.UsrId);
         await refreshRepo.AddAsync(stored);
-        return new AuthResponse(accessToken, raw, MapToResponse(user));
+        return new AuthResponse(accessToken, raw, UserResponse.From(user));
     }
 
     private string GenerateAccessToken(Usr user)
@@ -282,13 +268,4 @@ public class AuthService(
         return name == "" ? fallback : name;
     }
 
-    private static UserResponse MapToResponse(Usr u) => new(
-        u.UsrId,
-        u.UsrFirstname,
-        u.UsrLastname,
-        u.UsrEmail,
-        u.UsrPhone,
-        u.UsrLogin,
-        [.. u.UsrPolicies.Where(p => p.Policy is not null).Select(p => p.Policy.PolicyName)]
-    );
 }

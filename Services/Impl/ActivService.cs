@@ -47,7 +47,7 @@ public class ActivService(IActivRepository repo, ILogger<ActivService> logger) :
             .Select(drugId => new ActivDrug { ActivId = activ.ActivId, DrugId = drugId });
         await repo.AddDrugsAsync(drugs);
 
-        logger.LogInformation("Активность создана: id={ActivId}, usr={UsrId}", activ.ActivId, usrId);
+        logger.LogInformation("Activity created: id={ActivId}, usr={UsrId}", activ.ActivId, usrId);
         return await GetByIdAsync(activ.ActivId);
     }
 
@@ -64,7 +64,7 @@ public class ActivService(IActivRepository repo, ILogger<ActivService> logger) :
         activ.ActivResult = req.Result ?? activ.ActivResult;
 
         await repo.UpdateAsync(activ);
-        logger.LogInformation("Активность обновлена: id={ActivId}", id);
+        logger.LogInformation("Activity updated: id={ActivId}", id);
         return await GetByIdAsync(id);
     }
 
@@ -76,7 +76,7 @@ public class ActivService(IActivRepository repo, ILogger<ActivService> logger) :
 
         activ.IsDeleted = true;
         await repo.UpdateAsync(activ);
-        logger.LogInformation("Активность удалена: id={ActivId}", id);
+        logger.LogInformation("Activity deleted: id={ActivId}", id);
         return Result.Success();
     }
 

@@ -42,7 +42,7 @@ public class OrgService(IOrgRepository repo, IMemoryCache cache, ILogger<OrgServ
             OrgAddress = req.Address
         };
         await repo.AddAsync(org);
-        logger.LogInformation("Организация создана: {OrgName} (id={OrgId})", org.OrgName, org.OrgId);
+        logger.LogInformation("Organization created: {OrgName} (id={OrgId})", org.OrgName, org.OrgId);
         return await GetByIdAsync(org.OrgId);
     }
 
@@ -60,7 +60,7 @@ public class OrgService(IOrgRepository repo, IMemoryCache cache, ILogger<OrgServ
         org.OrgAddress = req.Address ?? org.OrgAddress;
 
         await repo.UpdateAsync(org);
-        logger.LogInformation("Организация обновлена: id={OrgId}", id);
+        logger.LogInformation("Organization updated: id={OrgId}", id);
         return await GetByIdAsync(id);
     }
 
@@ -72,7 +72,7 @@ public class OrgService(IOrgRepository repo, IMemoryCache cache, ILogger<OrgServ
 
         org.IsDeleted = true;
         await repo.UpdateAsync(org);
-        logger.LogInformation("Организация удалена: id={OrgId}", id);
+        logger.LogInformation("Organization deleted: id={OrgId}", id);
         return Result.Success();
     }
 
